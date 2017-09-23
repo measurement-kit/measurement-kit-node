@@ -2,7 +2,7 @@ import mk from 'measurement-kit'
 
 import {
   WebConnectivity
-} from 'measurement-kit/nettests'
+} from 'measurement-kit'
 
 const options = {
   backend: '',
@@ -33,6 +33,11 @@ wc.on('log', (type, s) => {
 wc.on('entry', (e) => {
   console.log('entry', e)
 })
-wc.start((result) => {
-  console.log('web_connectivity test finished running with result', result)
-})
+
+wc.run()
+  .then(result => {
+    console.log('web_connectivity test finished running with result', result)
+  })
+  .catch(error => {
+    console.log(error)
+  })
