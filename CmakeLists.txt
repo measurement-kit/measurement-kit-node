@@ -8,7 +8,14 @@ project(measurement-kit)
 include_directories(${CMAKE_JS_INC})
 
 # Declare the location of the source files
-file(GLOB SOURCE_FILES "src/*.cpp" "src/*.hpp")
+file(
+    GLOB
+    SOURCE_FILES
+    "src/*.cpp"
+    "src/*/*.cpp"
+    "src/*.hpp"
+    "src/*/*.hpp"
+)
 
 # Find the Measurement Kit library
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
@@ -19,7 +26,7 @@ include_directories(${MEASUREMENTKIT_INCLUDE_DIRS})
 # This line will tell CMake that we're building a shared library
 # from the above source files
 # named after the project's name
-add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
+add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES})
 
 # Gives our library file a .node extension without any "lib" prefix
 set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "" SUFFIX ".node")
@@ -28,6 +35,6 @@ set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "" SUFFIX ".node")
 target_link_libraries(
     ${PROJECT_NAME}
     ${CMAKE_JS_LIB}
-    MeasurementKit
+    measurement_kit_static
     ${MK_LIBS}
 )
