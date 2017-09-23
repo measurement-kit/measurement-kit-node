@@ -13,8 +13,8 @@ const options = {
 const client = mk.orchestrate.Client(options)
 try {
   let response = await client.register({
-      password: 'THE_DEVICE_PASSWORD',
-      type: 'probe' // This is the default
+    password: 'THE_DEVICE_PASSWORD',
+    type: 'probe' // This is the default
   })
   // Simulate a network change
   response = await client.update({networkType: '3g'})
