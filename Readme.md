@@ -19,17 +19,7 @@ sub-modules.
 
 ## Compiling
 
-You should first compile the version of measurement-kit you want to bind to by
-doing:
-
-```
-cd deps/measurement-kit/
-./autogen.sh
-./configure
-make
-```
-
-Then you can process with building the bindings with:
+To build the bindings run:
 
 ```
 npm run rebuild
