@@ -4,9 +4,9 @@
 import mk from 'measurement-kit'
 
 const options = {
-	geoipCountryPath: '',
-	geoipAsnPath: '',
-	networkType: 'wifi',
+  geoipCountryPath: '',
+  geoipAsnPath: '',
+  networkType: 'wifi',
   registryUrl: mk.orchestrate.TESTING_REGISTRY_URL
 }
 

@@ -7,7 +7,7 @@ const options = {
 	networkType: 'wifi',
   registryUrl: mk.orchestrate.TESTING_REGISTRY_URL
 }
--
+
 const client = mk.orchestrate.Client(options)
 client.register({
     password: 'THE_DEVICE_PASSWORD',
