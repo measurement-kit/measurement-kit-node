@@ -1,0 +1,13 @@
+{
+  "name": "measurement-kit",
+  "version": "0.1.0",
+  "license": "MIT",
+  "libmeasurement-kit": "",
+  "description": "Wrapper around libmeasurement-kit",
+  "main": "measurement-kit.js",
+  "gypfile": true,
+  "dependencies": {
+    "nan": "^2.7.0",
+    "node-gyp": "^3.6.2"
+  }
+}
