@@ -14,6 +14,8 @@ class WebConnectivityTest : public Nan::ObjectWrap {
 
   static void New(const Nan::FunctionCallbackInfo<v8::Value>& info);
 
+  static void SetOptions(const Nan::FunctionCallbackInfo<v8::Value>& info);
+
   static void SetVerbosity(const Nan::FunctionCallbackInfo<v8::Value>& info);
 
   static void OnProgress(const Nan::FunctionCallbackInfo<v8::Value>& info);
@@ -27,8 +29,8 @@ class WebConnectivityTest : public Nan::ObjectWrap {
   static void Run(const Nan::FunctionCallbackInfo<v8::Value>& info);
 
   static Nan::Persistent<v8::Function> constructor;
-  v8::Local<v8::Object> options_
-  mk::nettests::WebConnectivityTest test
+  mk::nettests::WebConnectivityTest test;
+  v8::Local<v8::Object> options_;
 };
 
 #endif
