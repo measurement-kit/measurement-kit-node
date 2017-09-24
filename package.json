@@ -14,7 +14,10 @@
   },
   "scripts": {
     "build": "cmake-js build",
-    "rebuild": "cmake-js rebuild",
+    "rebuild": "cmake-js -l=silly rebuild",
     "install": "cmake-js compile"
+  },
+  "devDependencies": {
+    "segfault-handler": "^1.0.0"
   }
 }
