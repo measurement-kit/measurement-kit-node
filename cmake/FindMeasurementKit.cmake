@@ -13,7 +13,7 @@ if (NOT MEASUREMENTKIT_FOUND)
     # Find the library
     find_library(MEASUREMENTKIT_LIBRARY
         NAMES
-        measurement_kit
+        libmeasurement_kit.a
         HINTS
         "${MEASUREMENTKIT_ROOT}"
         PATH_SUFFIXES
