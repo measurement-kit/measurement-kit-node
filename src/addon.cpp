@@ -1,5 +1,5 @@
 #include <nan.h>
-#include "common/version.hpp"   // NOLINT(build/include)
+#include "nettests/web_connectivity.hpp"   // NOLINT(build/include)
 
 using v8::FunctionTemplate;
 using v8::Handle;
@@ -9,9 +9,8 @@ using Nan::GetFunction;
 using Nan::New;
 using Nan::Set;
 
-NAN_MODULE_INIT(InitAll) {
-  Set(target, New<String>("version").ToLocalChecked(),
-    GetFunction(New<FunctionTemplate>(Version)).ToLocalChecked());
+void InitAll(v8::Local<v8::Object> exports) {
+  WebConnectivityTest::Init(exports);
 }
 
 NODE_MODULE(addon, InitAll)

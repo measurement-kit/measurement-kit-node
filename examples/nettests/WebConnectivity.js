@@ -1,8 +1,4 @@
-import mk from 'measurement-kit'
-
-import {
-  WebConnectivity
-} from 'measurement-kit/nettests'
+const mk = require('../../lib')
 
 const options = {
   backend: '',
@@ -23,7 +19,7 @@ const options = {
   outputFilePath: ''
 }
 
-wc = WebConnectivity(options)
+wc = mk.WebConnectivity(options)
 wc.on('progress', (prog, s) => {
   console.log('progress', prog, s)
 })
@@ -33,6 +29,11 @@ wc.on('log', (type, s) => {
 wc.on('entry', (e) => {
   console.log('entry', e)
 })
-wc.start((result) => {
-  console.log('web_connectivity test finished running with result', result)
-})
+wc.addInput('https://ooni.io/')
+wc.run()
+  .then(result => {
+    console.log('web_connectivity test finished running with result', result)
+  })
+  .catch(error => {
+    console.log(error)
+  })

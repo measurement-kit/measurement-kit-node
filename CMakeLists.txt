@@ -17,9 +17,14 @@ file(
     "src/*/*.hpp"
 )
 
-# Find the Measurement Kit library
+# Enable C++14
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Find MeasurementKit using our custom module
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
-#set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "${CMAKE_SOURCE_DIR}/deps/measurement-kit")
+#set(MEASUREMENTKIT_ROOT "MAYBE tweak this")
+# This is what does the magic
 find_package(MeasurementKit REQUIRED)
 include_directories(${MEASUREMENTKIT_INCLUDE_DIRS})
 
@@ -31,10 +36,9 @@ add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES})
 # Gives our library file a .node extension without any "lib" prefix
 set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "" SUFFIX ".node")
 
+message(STATUS "LIBRARIES ${MEASUREMENTKIT_LIBRARIES} | ${MEASUREMENTKIT_INCLUDE_DIRS}")
 # Link everything together
-target_link_libraries(
-    ${PROJECT_NAME}
+target_link_libraries(${PROJECT_NAME}
     ${CMAKE_JS_LIB}
-    measurement_kit_static
-    ${MK_LIBS}
+    ${MEASUREMENTKIT_LIBRARIES}
 )
