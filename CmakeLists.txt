@@ -17,11 +17,12 @@ file(
     "src/*/*.hpp"
 )
 
-# Build MeasurementKit as part of building the bindings
-set(MEASUREMENTKIT_ROOT "${CMAKE_SOURCE_DIR}/deps/measurement-kit/")
-include("${MEASUREMENTKIT_ROOT}/cmake/Common.cmake")
-include("${MEASUREMENTKIT_ROOT}/cmake/LibMeasurementKit.cmake")
-set(MEASUREMENTKIT_LIBRARIES "measurement_kit_static" "${MK_LIBS}")
+# Find MeasurementKit using our custom module
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
+#set(MEASUREMENTKIT_ROOT "MAYBE tweak this")
+# This is what does the magic
+find_package(MeasurementKit REQUIRED)
+include_directories(${MEASUREMENTKIT_INCLUDE_DIRS})
 
 # This line will tell CMake that we're building a shared library
 # from the above source files
@@ -34,4 +35,6 @@ set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "" SUFFIX ".node")
 message(STATUS "LIBRARIES ${MEASUREMENTKIT_LIBRARIES} | ${MEASUREMENTKIT_INCLUDE_DIRS}")
 # Link everything together
 target_link_libraries(${PROJECT_NAME}
-    ${MEASUREMENTKIT_LIBRARIES};${CMAKE_JS_LIB})
+    ${CMAKE_JS_LIB}
+    ${MEASUREMENTKIT_LIBRARIES}
+)

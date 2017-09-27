@@ -1,51 +1,25 @@
 if (NOT MEASUREMENTKIT_FOUND)
-    if (NOT MEASUREMENTKIT_ROOT)
-        set (MEASUREMENTKIT_ROOT "${CMAKE_SOURCE_DIR}/deps/measurement-kit")
-    endif (NOT MEASUREMENTKIT_ROOT)
+    set(MEASUREMENTKIT_ROOT
+        "${MEASUREMENTKIT_ROOT}"
+		CACHE
+		PATH
+		"Directory to search")
 
-    # A lot of the stuff below is taken from measurement-kit/CMakeLists.txt
-    # XXX maybe it's possible to refactor cmake in measurement-kit to allow for
-    # composing some of these variables/functions in here
-    set(CMAKE_CXX_STANDARD 14)
-    set(MK_UNIX_CFLAGS "-Wall -Wextra -pedantic -I${CMAKE_SOURCE_DIR}/include")
-    set(MK_UNIX_CXXFLAGS "-Wall -Wextra -pedantic -I${CMAKE_SOURCE_DIR}/include")
-
-    add_definitions(-DENABLE_INTEGRATION_TESTS -DMK_CA_BUNDLE="${MK_CA_BUNDLE}")
-
-    if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-        set(CMAKE_CXX_FLAGS
-            "${CMAKE_CXX_FLAGS} ${MK_UNIX_CXXFLAGS} -Wmissing-prototypes")
-    elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MK_UNIX_CXXFLAGS}")
-    endif()
-
-    if("${CMAKE_C_COMPILER_ID}" MATCHES "Clang")
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MK_UNIX_CFLAGS} -Wmissing-prototypes")
-    elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MK_UNIX_CFLAGS}")
-    endif()
-
-
-    file(
-        GLOB
-        MK_LIBRARY_SOURCES
-        "${MEASUREMENTKIT_ROOT}/include/measurement_kit/*.hpp"
-        "${MEASUREMENTKIT_ROOT}/include/measurement_kit/*/*.hpp"
-        "${MEASUREMENTKIT_ROOT}/src/libmeasurement_kit/*/*.c"
-        "${MEASUREMENTKIT_ROOT}/src/libmeasurement_kit/*/*.cpp"
-        )
+    message(STATUS "SEARCHING IN ${MEASUREMENTKIT_ROOT}")
 
     find_package(Threads REQUIRED)
     list(APPEND MK_LIBS GeoIP crypto ssl event event_openssl event_pthreads Threads::Threads)
 
-    # Compile the library
-    add_library(
-        measurement_kit_static
-        STATIC
-        ${MK_LIBRARY_SOURCES}
-        )
+    # Find the library
+    find_library(MEASUREMENTKIT_LIBRARY
+        NAMES
+        measurement_kit
+        HINTS
+        "${MEASUREMENTKIT_ROOT}"
+        PATH_SUFFIXES
+		"${_LIBSUFFIXES}"
+    )
 
-    message(STATUS "SEARCHING HEADERS IN ${MEASUREMENTKIT_ROOT}")
     # Find the headers
     find_path(MEASUREMENTKIT_INCLUDE_DIR
         NAMES
@@ -146,14 +120,20 @@ if (NOT MEASUREMENTKIT_FOUND)
             measurement_kit/traceroute/error.hpp
             measurement_kit/traceroute/interface.hpp
             measurement_kit/traceroute.hpp
-        PATHS "${MEASUREMENTKIT_ROOT}"
-        PATH_SUFFIXES include
+        HINTS
+        "${_libdir}/.."
+        PATHS
+        "${MEASUREMENTKIT_ROOT}"
+        PATH_SUFFIXES
+        include
         )
+
     message(STATUS "DONE ${MEASUREMENTKIT_INCLUDE_DIR}")
     include(FindPackageHandleStandardArgs)
     find_package_handle_standard_args(
         MeasurementKit
         DEFAULT_MSG
+        MEASUREMENTKIT_LIBRARY
         MEASUREMENTKIT_INCLUDE_DIR
     )
 
@@ -161,10 +141,9 @@ endif (NOT MEASUREMENTKIT_FOUND)
 
 if(MEASUREMENTKIT_FOUND)
     set(MEASUREMENTKIT_INCLUDE_DIRS ${MEASUREMENTKIT_INCLUDE_DIR})
-endif()
-
-mark_as_advanced(MEASUREMENTKIT_INCLUDE_DIR)
-
-if(MEASUREMENTKIT_FOUND)
+    set(MEASUREMENTKIT_LIBRARIES "${MEASUREMENTKIT_LIBRARY};${MK_LIBS}")
     mark_as_advanced(MEASUREMENTKIT_ROOT)
 endif()
+
+mark_as_advanced(MEASUREMENTKIT_INCLUDE_DIR,
+    MEASUREMENTKIT_LIBRARIES)
