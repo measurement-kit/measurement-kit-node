@@ -17,6 +17,10 @@ file(
     "src/*/*.hpp"
 )
 
+# Enable C++14
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 # Find MeasurementKit using our custom module
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 #set(MEASUREMENTKIT_ROOT "MAYBE tweak this")
