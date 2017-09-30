@@ -13,7 +13,7 @@ const options = {
   softwareName: '',
   softwareVersion: '',
 
-  verbosity: mk.LOG_INFO,
+  logLevel: mk.LOG_DEBUG,
   inputFilePath: '',
   errorFilePath: '',
   outputFilePath: ''
