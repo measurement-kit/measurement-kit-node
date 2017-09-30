@@ -8,7 +8,7 @@ if (NOT MEASUREMENTKIT_FOUND)
     message(STATUS "SEARCHING IN ${MEASUREMENTKIT_ROOT}")
 
     find_package(Threads REQUIRED)
-    list(APPEND MK_LIBS GeoIP crypto ssl event event_openssl event_pthreads Threads::Threads)
+    list(APPEND MK_LIBS GeoIP crypto event event_openssl event_pthreads Threads::Threads)
 
     # Find the library
     find_library(MEASUREMENTKIT_LIBRARY

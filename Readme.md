@@ -24,3 +24,9 @@ To build the bindings run:
 ```
 npm run rebuild
 ```
+
+On macOS be sure to run this:
+
+```
+OPENSSL_ROOT_DIR=/usr/local/opt/openssl/ npm run rebuild
+```

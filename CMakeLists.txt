@@ -21,6 +21,9 @@ file(
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Find OpenSSL
+find_package(OpenSSL REQUIRED)
+
 # Find MeasurementKit using our custom module
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 #set(MEASUREMENTKIT_ROOT "MAYBE tweak this")
@@ -37,8 +40,10 @@ add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES})
 set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "" SUFFIX ".node")
 
 message(STATUS "LIBRARIES ${MEASUREMENTKIT_LIBRARIES} | ${MEASUREMENTKIT_INCLUDE_DIRS}")
+message(STATUS "OpenSSL Version ${OPENSSL_VERSION} | ${OPENSSL_LIBRARIES}")
 # Link everything together
 target_link_libraries(${PROJECT_NAME}
     ${CMAKE_JS_LIB}
+    ${OPENSSL_LIBRARIES}
     ${MEASUREMENTKIT_LIBRARIES}
 )
