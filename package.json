@@ -15,7 +15,8 @@
   "scripts": {
     "build": "cmake-js build",
     "rebuild": "cmake-js -l=silly rebuild",
-    "install": "cmake-js compile"
+    "install": "cmake-js compile",
+    "codegen": "node scripts/gen-nettests.js"
   },
   "devDependencies": {
     "change-case": "^3.0.1",
