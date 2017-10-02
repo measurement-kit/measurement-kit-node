@@ -17,10 +17,12 @@ BaseTest::~BaseTest() {
 
 void BaseTest::Init(v8::Local<v8::Object> exports) {
 
+  std::string className = BaseTest::getClassName();
+
   // Prepare constructor template
   Nan::HandleScope scope;
   v8::Local<v8::FunctionTemplate> tpl = Nan::New<v8::FunctionTemplate>(New);
-  tpl->SetClassName(Nan::New("BaseTest").ToLocalChecked());
+  tpl->SetClassName(Nan::New(className).ToLocalChecked());
   tpl->InstanceTemplate()->SetInternalFieldCount(1);
 
   Nan::SetPrototypeMethod(tpl, "add_input_filepath", AddInputFilePath);
@@ -34,7 +36,7 @@ void BaseTest::Init(v8::Local<v8::Object> exports) {
   Nan::SetPrototypeMethod(tpl, "run", Run);
 
   constructor.Reset(tpl->GetFunction());
-  exports->Set(Nan::New("BaseTest").ToLocalChecked(), tpl->GetFunction());
+  exports->Set(Nan::New(className).ToLocalChecked(), tpl->GetFunction());
 }
 
 

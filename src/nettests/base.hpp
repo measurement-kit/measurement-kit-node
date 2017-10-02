@@ -30,6 +30,7 @@ class BaseTest : public Nan::ObjectWrap {
 
    static Nan::Persistent<v8::Function> constructor;
 
+   static std::string getClassName() { return "BaseTest"; };
  private:
    mk::nettests::BaseTest test;
    v8::Local<v8::Object> options_;

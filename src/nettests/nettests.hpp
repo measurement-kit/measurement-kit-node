@@ -8,7 +8,7 @@
 #define MK_NODE_DECLARE_TEST(_name_)                                       \
     class _name_ : public BaseTest {                                       \
       public:                                                              \
-        static void Init(v8::Local<v8::Object> exports);                   \
+        static std::string getClassName() { return #_name_; };              \
       private:                                                             \
         mk::nettests::_name_ test;                                         \
     }
