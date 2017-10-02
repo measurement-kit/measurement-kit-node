@@ -46,14 +46,14 @@ fs.readFile(tmplCppPath, 'utf8', (err, tmplCpp) => {
           console.log(`FAILED ${nettestCppPath}`, err)
           return
         }
-        console.log(`WRITTEN ${nettestCppPath}`, err)
+        //console.log(`WRITTEN ${nettestCppPath}`, err)
       })
       fs.writeFile(nettestHppPath, nettestHpp, function(err) {
         if (err) {
           console.log(`FAILED ${nettestHppPath}`, err)
           return
         }
-        console.log(`WRITTEN ${nettestHppPath}`, err)
+        //console.log(`WRITTEN ${nettestHppPath}`, err)
       })
     })
   })
