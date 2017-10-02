@@ -1,28 +1,19 @@
-#include "base.hpp"
+#include "tcp_connect.hpp"
 
-/*
- * For examples see:
- * * https://github.com/nodejs/node-addon-examples
- * * https://github.com/fcanas/node-native-boilerplate
- *
- */
+Nan::Persistent<v8::Function> TcpConnectTest::constructor;
 
-Nan::Persistent<v8::Function> BaseTest::constructor;
-
-BaseTest::BaseTest(v8::Local<v8::Object> options) : options_(options) {
+TcpConnectTest::TcpConnectTest(v8::Local<v8::Object> options) : options_(options) {
 }
 
-BaseTest::~BaseTest() {
+TcpConnectTest::~TcpConnectTest() {
 }
 
-void BaseTest::Init(v8::Local<v8::Object> exports) {
-
-  std::string className = BaseTest::getClassName();
+void TcpConnectTest::Init(v8::Local<v8::Object> exports) {
 
   // Prepare constructor template
   Nan::HandleScope scope;
   v8::Local<v8::FunctionTemplate> tpl = Nan::New<v8::FunctionTemplate>(New);
-  tpl->SetClassName(Nan::New(className).ToLocalChecked());
+  tpl->SetClassName(Nan::New("TcpConnectTest").ToLocalChecked());
   tpl->InstanceTemplate()->SetInternalFieldCount(1);
 
   Nan::SetPrototypeMethod(tpl, "add_input_filepath", AddInputFilePath);
@@ -36,13 +27,13 @@ void BaseTest::Init(v8::Local<v8::Object> exports) {
   Nan::SetPrototypeMethod(tpl, "run", Run);
 
   constructor.Reset(tpl->GetFunction());
-  exports->Set(Nan::New(className).ToLocalChecked(), tpl->GetFunction());
+  exports->Set(Nan::New("TcpConnectTest").ToLocalChecked(), tpl->GetFunction());
 }
 
 
-void BaseTest::New(const Nan::FunctionCallbackInfo<v8::Value>& info) {
+void TcpConnectTest::New(const Nan::FunctionCallbackInfo<v8::Value>& info) {
   if (info.IsConstructCall()) {
-    // Invoked as constructor: `new BaseTest(...)`
+    // Invoked as constructor: `new TcpConnectTest(...)`
 		v8::Local<v8::Object> options;
     if (info[0]->IsUndefined() || !info[0]->IsObject()) {
       options = Nan::New<v8::Object>();
@@ -52,11 +43,11 @@ void BaseTest::New(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 
     // XXX how do we abstract this so that objects don't get sliced and we
     // don't have to duplicate this in every sub-class?
-    BaseTest* obj = new BaseTest(options);
+    TcpConnectTest* obj = new TcpConnectTest(options);
     obj->Wrap(info.This());
     info.GetReturnValue().Set(info.This());
   } else {
-    // Invoked as plain function `BaseTest(...)`, turn into construct call.
+    // Invoked as plain function `TcpConnectTest(...)`, turn into construct call.
     const int argc = 1;
     v8::Local<v8::Value> argv[] = { info[0] };
     v8::Local<v8::Function> cons = Nan::New<v8::Function>(constructor);
@@ -64,10 +55,10 @@ void BaseTest::New(const Nan::FunctionCallbackInfo<v8::Value>& info) {
   }
 }
 
-void BaseTest::SetOptions(const Nan::FunctionCallbackInfo<v8::Value>& info) {
+void TcpConnectTest::SetOptions(const Nan::FunctionCallbackInfo<v8::Value>& info) {
   assert(info.Length() >= 2);
 
-  BaseTest* obj = ObjectWrap::Unwrap<BaseTest>(info.Holder());
+  TcpConnectTest* obj = ObjectWrap::Unwrap<TcpConnectTest>(info.Holder());
 
   v8::String::Utf8Value utf8Name(info[0]->ToString());
   v8::String::Utf8Value utf8Value(info[1]->ToString());
@@ -77,22 +68,22 @@ void BaseTest::SetOptions(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 }
 
 
-void BaseTest::SetVerbosity(const Nan::FunctionCallbackInfo<v8::Value>& info) {
+void TcpConnectTest::SetVerbosity(const Nan::FunctionCallbackInfo<v8::Value>& info) {
   assert(info.Length() >= 1);
 
-  BaseTest* obj = ObjectWrap::Unwrap<BaseTest>(info.Holder());
+  TcpConnectTest* obj = ObjectWrap::Unwrap<TcpConnectTest>(info.Holder());
   const uint32_t level = info[0]->Uint32Value();
   obj->test.set_verbosity(level);
 }
 
-void BaseTest::OnProgress(const Nan::FunctionCallbackInfo<v8::Value>& info) {
+void TcpConnectTest::OnProgress(const Nan::FunctionCallbackInfo<v8::Value>& info) {
   // See: https://github.com/nodejs/node-addon-examples/blob/master/3_callbacks/nan/addon.cc
   // What we probably want to do is write a lambda that wraps the native C++
   // callback and calls the v8 callback by doing something like:
 
   assert(info.Length() >= 1);
 
-  BaseTest* obj = ObjectWrap::Unwrap<BaseTest>(info.Holder());
+  TcpConnectTest* obj = ObjectWrap::Unwrap<TcpConnectTest>(info.Holder());
 
   obj->test.on_progress([&](double percent, std::string msg) {
     v8::Local<v8::Function> cb = info[0].As<v8::Function>();
@@ -105,10 +96,10 @@ void BaseTest::OnProgress(const Nan::FunctionCallbackInfo<v8::Value>& info) {
   });
 }
 
-void BaseTest::OnLog(const Nan::FunctionCallbackInfo<v8::Value>& info) {
+void TcpConnectTest::OnLog(const Nan::FunctionCallbackInfo<v8::Value>& info) {
   assert(info.Length() >= 1);
 
-  BaseTest* obj = ObjectWrap::Unwrap<BaseTest>(info.Holder());
+  TcpConnectTest* obj = ObjectWrap::Unwrap<TcpConnectTest>(info.Holder());
 
   // XXX am I passing in the info pointer properly?
   obj->test.on_log([&](int level, const char *s) {
@@ -122,25 +113,25 @@ void BaseTest::OnLog(const Nan::FunctionCallbackInfo<v8::Value>& info) {
   });
 }
 
-void BaseTest::AddInputFilePath(const Nan::FunctionCallbackInfo<v8::Value>& info) {
+void TcpConnectTest::AddInputFilePath(const Nan::FunctionCallbackInfo<v8::Value>& info) {
   // See: https://github.com/nodejs/node-addon-examples/blob/master/3_callbacks/nan/addon.cc
 }
 
-void BaseTest::AddInput(const Nan::FunctionCallbackInfo<v8::Value>& info) {
+void TcpConnectTest::AddInput(const Nan::FunctionCallbackInfo<v8::Value>& info) {
   assert(info.Length() >= 1);
 
-  BaseTest* obj = ObjectWrap::Unwrap<BaseTest>(info.Holder());
+  TcpConnectTest* obj = ObjectWrap::Unwrap<TcpConnectTest>(info.Holder());
   v8::String::Utf8Value utf8Input(info[0]->ToString());
   const auto input = std::string(*utf8Input);
   obj->test.add_input(input);
 }
 
-void BaseTest::Run(const Nan::FunctionCallbackInfo<v8::Value>& info) {
+void TcpConnectTest::Run(const Nan::FunctionCallbackInfo<v8::Value>& info) {
   assert(info.Length() >= 1);
 
   v8::Local<v8::Function> cb = info[0].As<v8::Function>();
 
-  BaseTest* obj = ObjectWrap::Unwrap<BaseTest>(info.Holder());
+  TcpConnectTest* obj = ObjectWrap::Unwrap<TcpConnectTest>(info.Holder());
 
   // XXX this should actually be done wrapping the Async methods of v8
   obj->test.run();

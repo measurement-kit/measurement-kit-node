@@ -1,15 +1,15 @@
-#ifndef MK_NODE_NETTESTS_BASE_TEST_H
-#define MK_NODE_NETTESTS_BASE_TEST_H
+#ifndef MK_NODE_NETTESTS_HTTP_HEADER_FIELD_MANIPULATION_TEST_H
+#define MK_NODE_NETTESTS_HTTP_HEADER_FIELD_MANIPULATION_TEST_H
 
 #include <nan.h>
 #include <measurement_kit/nettests.hpp>
 
-class BaseTest : public Nan::ObjectWrap {
+class HttpHeaderFieldManipulationTest : public Nan::ObjectWrap {
  public:
    static void Init(v8::Local<v8::Object> exports);
-   ~BaseTest();
+   ~HttpHeaderFieldManipulationTest();
 
-   explicit BaseTest(v8::Local<v8::Object> options);
+   explicit HttpHeaderFieldManipulationTest(v8::Local<v8::Object> options);
 
    static void New(const Nan::FunctionCallbackInfo<v8::Value>& info);
 
@@ -30,9 +30,8 @@ class BaseTest : public Nan::ObjectWrap {
 
    static Nan::Persistent<v8::Function> constructor;
 
-   static std::string getClassName() { return "BaseTest"; };
  private:
-   mk::nettests::BaseTest test;
+   mk::nettests::HttpHeaderFieldManipulationTest test;
    v8::Local<v8::Object> options_;
 };
 

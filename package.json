@@ -18,6 +18,8 @@
     "install": "cmake-js compile"
   },
   "devDependencies": {
+    "change-case": "^3.0.1",
+    "mustache": "^2.3.0",
     "segfault-handler": "^1.0.0"
   }
 }
