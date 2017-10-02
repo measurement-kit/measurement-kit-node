@@ -1,4 +1,4 @@
-#include "web_connectivity.hpp"
+#include "base.hpp"
 
 /*
  * For examples see:
@@ -7,23 +7,22 @@
  *
  */
 
-Nan::Persistent<v8::Function> WebConnectivityTest::constructor;
+Nan::Persistent<v8::Function> BaseTest::constructor;
 
-WebConnectivityTest::WebConnectivityTest(v8::Local<v8::Object> options) : options_(options) {
+BaseTest::BaseTest(v8::Local<v8::Object> options) : options_(options) {
 }
 
-WebConnectivityTest::~WebConnectivityTest() {
+BaseTest::~BaseTest() {
 }
 
-void WebConnectivityTest::Init(v8::Local<v8::Object> exports) {
+void BaseTest::Init(v8::Local<v8::Object> exports) {
 
   // Prepare constructor template
   Nan::HandleScope scope;
   v8::Local<v8::FunctionTemplate> tpl = Nan::New<v8::FunctionTemplate>(New);
-  tpl->SetClassName(Nan::New("WebConnectivityTest").ToLocalChecked());
+  tpl->SetClassName(Nan::New("BaseTest").ToLocalChecked());
   tpl->InstanceTemplate()->SetInternalFieldCount(1);
 
-  // Prototype
   Nan::SetPrototypeMethod(tpl, "add_input_filepath", AddInputFilePath);
   Nan::SetPrototypeMethod(tpl, "add_input", AddInput);
 
@@ -35,35 +34,38 @@ void WebConnectivityTest::Init(v8::Local<v8::Object> exports) {
   Nan::SetPrototypeMethod(tpl, "run", Run);
 
   constructor.Reset(tpl->GetFunction());
-  exports->Set(Nan::New("WebConnectivityTest").ToLocalChecked(), tpl->GetFunction());
+  exports->Set(Nan::New("BaseTest").ToLocalChecked(), tpl->GetFunction());
 }
 
 
-void WebConnectivityTest::New(const Nan::FunctionCallbackInfo<v8::Value>& info) {
+void BaseTest::New(const Nan::FunctionCallbackInfo<v8::Value>& info) {
   if (info.IsConstructCall()) {
-    // Invoked as constructor: `new WebConnectivityTest(...)`
+    // Invoked as constructor: `new BaseTest(...)`
 		v8::Local<v8::Object> options;
     if (info[0]->IsUndefined() || !info[0]->IsObject()) {
       options = Nan::New<v8::Object>();
     } else {
       options = info[0]->ToObject();
     }
-    WebConnectivityTest* obj = new WebConnectivityTest(options);
+
+    // XXX how do we abstract this so that objects don't get sliced and we
+    // don't have to duplicate this in every sub-class?
+    BaseTest* obj = new BaseTest(options);
     obj->Wrap(info.This());
     info.GetReturnValue().Set(info.This());
   } else {
-    // Invoked as plain function `WebConnectivityTest(...)`, turn into construct call.
+    // Invoked as plain function `BaseTest(...)`, turn into construct call.
     const int argc = 1;
-    v8::Local<v8::Value> argv[argc] = { info[0] };
+    v8::Local<v8::Value> argv[] = { info[0] };
     v8::Local<v8::Function> cons = Nan::New<v8::Function>(constructor);
     info.GetReturnValue().Set(cons->NewInstance(argc, argv));
   }
 }
 
-void WebConnectivityTest::SetOptions(const Nan::FunctionCallbackInfo<v8::Value>& info) {
+void BaseTest::SetOptions(const Nan::FunctionCallbackInfo<v8::Value>& info) {
   assert(info.Length() >= 2);
 
-  WebConnectivityTest* obj = ObjectWrap::Unwrap<WebConnectivityTest>(info.Holder());
+  BaseTest* obj = ObjectWrap::Unwrap<BaseTest>(info.Holder());
 
   v8::String::Utf8Value utf8Name(info[0]->ToString());
   v8::String::Utf8Value utf8Value(info[1]->ToString());
@@ -73,50 +75,70 @@ void WebConnectivityTest::SetOptions(const Nan::FunctionCallbackInfo<v8::Value>&
 }
 
 
-void WebConnectivityTest::SetVerbosity(const Nan::FunctionCallbackInfo<v8::Value>& info) {
+void BaseTest::SetVerbosity(const Nan::FunctionCallbackInfo<v8::Value>& info) {
   assert(info.Length() >= 1);
 
-  WebConnectivityTest* obj = ObjectWrap::Unwrap<WebConnectivityTest>(info.Holder());
+  BaseTest* obj = ObjectWrap::Unwrap<BaseTest>(info.Holder());
   const uint32_t level = info[0]->Uint32Value();
   obj->test.set_verbosity(level);
 }
 
-void WebConnectivityTest::OnProgress(const Nan::FunctionCallbackInfo<v8::Value>& info) {
+void BaseTest::OnProgress(const Nan::FunctionCallbackInfo<v8::Value>& info) {
   // See: https://github.com/nodejs/node-addon-examples/blob/master/3_callbacks/nan/addon.cc
   // What we probably want to do is write a lambda that wraps the native C++
   // callback and calls the v8 callback by doing something like:
 
-  /*
-  v8::Local<v8::Function> cb = info[0].As<v8::Function>();
-  const unsigned argc = 1;
-  v8::Local<v8::Value> argv[argc] = { Nan::New("hello world").ToLocalChecked() };
-  Nan::MakeCallback(Nan::GetCurrentContext()->Global(), cb, argc, argv);
-  */
-}
-
-void WebConnectivityTest::OnLog(const Nan::FunctionCallbackInfo<v8::Value>& info) {
-  // See: https://github.com/nodejs/node-addon-examples/blob/master/3_callbacks/nan/addon.cc
-}
-
-void WebConnectivityTest::AddInputFilePath(const Nan::FunctionCallbackInfo<v8::Value>& info) {
-  // See: https://github.com/nodejs/node-addon-examples/blob/master/3_callbacks/nan/addon.cc
-}
-
-void WebConnectivityTest::AddInput(const Nan::FunctionCallbackInfo<v8::Value>& info) {
   assert(info.Length() >= 1);
 
-  WebConnectivityTest* obj = ObjectWrap::Unwrap<WebConnectivityTest>(info.Holder());
+  BaseTest* obj = ObjectWrap::Unwrap<BaseTest>(info.Holder());
+
+  obj->test.on_progress([&](double percent, std::string msg) {
+    v8::Local<v8::Function> cb = info[0].As<v8::Function>();
+    const int argc = 2;
+    v8::Local<v8::Value> argv[argc] = {
+      Nan::New(percent),
+      Nan::New(msg).ToLocalChecked()
+    };
+    Nan::MakeCallback(Nan::GetCurrentContext()->Global(), cb, argc, argv);
+  });
+}
+
+void BaseTest::OnLog(const Nan::FunctionCallbackInfo<v8::Value>& info) {
+  assert(info.Length() >= 1);
+
+  BaseTest* obj = ObjectWrap::Unwrap<BaseTest>(info.Holder());
+
+  // XXX am I passing in the info pointer properly?
+  obj->test.on_log([&](int level, const char *s) {
+    v8::Local<v8::Function> cb = info[0].As<v8::Function>();
+    const int argc = 2;
+    v8::Local<v8::Value> argv[argc] = {
+      Nan::New(level),
+      Nan::New(std::string(s)).ToLocalChecked()
+    };
+    Nan::MakeCallback(Nan::GetCurrentContext()->Global(), cb, argc, argv);
+  });
+}
+
+void BaseTest::AddInputFilePath(const Nan::FunctionCallbackInfo<v8::Value>& info) {
+  // See: https://github.com/nodejs/node-addon-examples/blob/master/3_callbacks/nan/addon.cc
+}
+
+void BaseTest::AddInput(const Nan::FunctionCallbackInfo<v8::Value>& info) {
+  assert(info.Length() >= 1);
+
+  BaseTest* obj = ObjectWrap::Unwrap<BaseTest>(info.Holder());
   v8::String::Utf8Value utf8Input(info[0]->ToString());
   const auto input = std::string(*utf8Input);
   obj->test.add_input(input);
 }
 
-void WebConnectivityTest::Run(const Nan::FunctionCallbackInfo<v8::Value>& info) {
+void BaseTest::Run(const Nan::FunctionCallbackInfo<v8::Value>& info) {
   assert(info.Length() >= 1);
 
   v8::Local<v8::Function> cb = info[0].As<v8::Function>();
 
-  WebConnectivityTest* obj = ObjectWrap::Unwrap<WebConnectivityTest>(info.Holder());
+  BaseTest* obj = ObjectWrap::Unwrap<BaseTest>(info.Holder());
 
   // XXX this should actually be done wrapping the Async methods of v8
   obj->test.run();

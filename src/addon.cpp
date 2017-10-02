@@ -1,5 +1,5 @@
 #include <nan.h>
-#include "nettests/web_connectivity.hpp"   // NOLINT(build/include)
+#include "nettests/nettests.hpp"   // NOLINT(build/include)
 
 using v8::FunctionTemplate;
 using v8::Handle;
