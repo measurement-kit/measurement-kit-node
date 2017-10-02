@@ -18,7 +18,6 @@ const options = {
   errorFilePath: '',
   outputFilePath: ''
 }
-
 wc = mk.WebConnectivity(options)
 wc.on('progress', (prog, s) => {
   console.log('progress', prog, s)
@@ -29,7 +28,7 @@ wc.on('log', (type, s) => {
 wc.on('entry', (e) => {
   console.log('entry', e)
 })
-wc.addInput('https://ooni.io/')
+wc.addInput('https://ooni.torproject.org/')
 wc.run()
   .then(result => {
     console.log('web_connectivity test finished running with result', result)
