@@ -21,8 +21,20 @@ file(
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+execute_process(COMMAND
+    node -pe process.versions.openssl
+    OUTPUT_VARIABLE
+    NODE_OPENSSL_VERSION)
+
 # Find OpenSSL
 find_package(OpenSSL REQUIRED)
+
+if(NOT (${NODE_OPENSSL_VERSION} VERSION_EQUAL ${OPENSSL_VERSION}))
+    message(SEND_ERROR "The version of node openssl ${NODE_OPENSSL_VERSION} differs from the system ${OPENSSL_VERSION}. This will most likely break stuff")
+    message(FATAL_ERROR "You should run ROOT_OPENSSL_DIR=/path/to/openssl${NODE_OPENSSL_VERSION} npm run rebuild")
+else()
+    message(STATUS "Good, node-openssl ${NODE_OPENSSL_VERSION} == linked openssl ${OPENSSL_VERSION}")
+endif()
 
 # Find MeasurementKit using our custom module
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
