@@ -14,7 +14,7 @@
   },
   "scripts": {
     "build": "cmake-js build",
-    "rebuild": "cmake-js -l=silly rebuild",
+    "rebuild": "npm run codegen && cmake-js -l=silly rebuild",
     "install": "cmake-js compile",
     "codegen": "node scripts/gen-nettests.js"
   },
