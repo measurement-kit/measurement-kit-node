@@ -90,6 +90,7 @@ void DnsInjectionTest::OnProgress(const Nan::FunctionCallbackInfo<v8::Value>& in
 
   assert(info.Length() >= 1);
 
+  /*
   DnsInjectionTest* obj = ObjectWrap::Unwrap<DnsInjectionTest>(info.Holder());
 
   obj->test.on_progress([&](double percent, std::string msg) {
@@ -101,16 +102,25 @@ void DnsInjectionTest::OnProgress(const Nan::FunctionCallbackInfo<v8::Value>& in
     };
     Nan::MakeCallback(Nan::GetCurrentContext()->Global(), cb, argc, argv);
   });
+  */
 }
 
 void DnsInjectionTest::OnLog(const Nan::FunctionCallbackInfo<v8::Value>& info) {
   assert(info.Length() >= 1);
 
-  DnsInjectionTest* obj = ObjectWrap::Unwrap<DnsInjectionTest>(info.Holder());
+  v8::Isolate *isolate = v8::Isolate::GetCurrent();
 
-  // XXX am I passing in the info pointer properly?
-  obj->test.on_log([&](int level, const char *s) {
-    v8::Local<v8::Function> cb = info[0].As<v8::Function>();
+  v8::Persistent<v8::Function, v8::CopyablePersistentTraits<v8::Function>> pCallback(
+    isolate,
+    info[0].As<v8::Function>()
+  );
+
+  DnsInjectionTest* obj = ObjectWrap::Unwrap<DnsInjectionTest>(info.Holder());
+  obj->test.on_log([pCallback](int level, const char *s) {
+    v8::Local<v8::Function> cb = Nan::New(pCallback);
+
+    // XXX We need to handle the deletion of these somewhere
+    // gCallback.Reset();
     const int argc = 2;
     v8::Local<v8::Value> argv[argc] = {
       Nan::New(level),
@@ -136,6 +146,7 @@ void DnsInjectionTest::AddInput(const Nan::FunctionCallbackInfo<v8::Value>& info
 void DnsInjectionTest::OnEntry(const Nan::FunctionCallbackInfo<v8::Value>& info) {
   assert(info.Length() >= 1);
 
+  /*
   DnsInjectionTest* obj = ObjectWrap::Unwrap<DnsInjectionTest>(info.Holder());
 
   obj->test.on_entry([&](std::string s) {
@@ -146,11 +157,13 @@ void DnsInjectionTest::OnEntry(const Nan::FunctionCallbackInfo<v8::Value>& info)
     };
     Nan::MakeCallback(Nan::GetCurrentContext()->Global(), cb, argc, argv);
   });
+  */
 }
 
 void DnsInjectionTest::OnEvent(const Nan::FunctionCallbackInfo<v8::Value>& info) {
   assert(info.Length() >= 1);
 
+  /*
   DnsInjectionTest* obj = ObjectWrap::Unwrap<DnsInjectionTest>(info.Holder());
 
   obj->test.on_event([&](const char *s) {
@@ -161,11 +174,13 @@ void DnsInjectionTest::OnEvent(const Nan::FunctionCallbackInfo<v8::Value>& info)
     };
     Nan::MakeCallback(Nan::GetCurrentContext()->Global(), cb, argc, argv);
   });
+  */
 }
 
 void DnsInjectionTest::OnEnd(const Nan::FunctionCallbackInfo<v8::Value>& info) {
   assert(info.Length() >= 1);
 
+  /*
   DnsInjectionTest* obj = ObjectWrap::Unwrap<DnsInjectionTest>(info.Holder());
 
   obj->test.on_end([&]() {
@@ -176,11 +191,13 @@ void DnsInjectionTest::OnEnd(const Nan::FunctionCallbackInfo<v8::Value>& info) {
     };
     Nan::MakeCallback(Nan::GetCurrentContext()->Global(), cb, argc, argv);
   });
+  */
 }
 
 void DnsInjectionTest::OnBegin(const Nan::FunctionCallbackInfo<v8::Value>& info) {
   assert(info.Length() >= 1);
 
+  /*
   DnsInjectionTest* obj = ObjectWrap::Unwrap<DnsInjectionTest>(info.Holder());
 
   obj->test.on_begin([&]() {
@@ -191,6 +208,7 @@ void DnsInjectionTest::OnBegin(const Nan::FunctionCallbackInfo<v8::Value>& info)
     };
     Nan::MakeCallback(Nan::GetCurrentContext()->Global(), cb, argc, argv);
   });
+  */
 }
 
 void DnsInjectionTest::SetErrorFilepath(const Nan::FunctionCallbackInfo<v8::Value>& info) {

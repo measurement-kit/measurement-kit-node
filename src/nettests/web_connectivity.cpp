@@ -90,6 +90,7 @@ void WebConnectivityTest::OnProgress(const Nan::FunctionCallbackInfo<v8::Value>&
 
   assert(info.Length() >= 1);
 
+  /*
   WebConnectivityTest* obj = ObjectWrap::Unwrap<WebConnectivityTest>(info.Holder());
 
   obj->test.on_progress([&](double percent, std::string msg) {
@@ -101,16 +102,25 @@ void WebConnectivityTest::OnProgress(const Nan::FunctionCallbackInfo<v8::Value>&
     };
     Nan::MakeCallback(Nan::GetCurrentContext()->Global(), cb, argc, argv);
   });
+  */
 }
 
 void WebConnectivityTest::OnLog(const Nan::FunctionCallbackInfo<v8::Value>& info) {
   assert(info.Length() >= 1);
 
-  WebConnectivityTest* obj = ObjectWrap::Unwrap<WebConnectivityTest>(info.Holder());
+  v8::Isolate *isolate = v8::Isolate::GetCurrent();
 
-  // XXX am I passing in the info pointer properly?
-  obj->test.on_log([&](int level, const char *s) {
-    v8::Local<v8::Function> cb = info[0].As<v8::Function>();
+  v8::Persistent<v8::Function, v8::CopyablePersistentTraits<v8::Function>> pCallback(
+    isolate,
+    info[0].As<v8::Function>()
+  );
+
+  WebConnectivityTest* obj = ObjectWrap::Unwrap<WebConnectivityTest>(info.Holder());
+  obj->test.on_log([pCallback](int level, const char *s) {
+    v8::Local<v8::Function> cb = Nan::New(pCallback);
+
+    // XXX We need to handle the deletion of these somewhere
+    // gCallback.Reset();
     const int argc = 2;
     v8::Local<v8::Value> argv[argc] = {
       Nan::New(level),
@@ -136,6 +146,7 @@ void WebConnectivityTest::AddInput(const Nan::FunctionCallbackInfo<v8::Value>& i
 void WebConnectivityTest::OnEntry(const Nan::FunctionCallbackInfo<v8::Value>& info) {
   assert(info.Length() >= 1);
 
+  /*
   WebConnectivityTest* obj = ObjectWrap::Unwrap<WebConnectivityTest>(info.Holder());
 
   obj->test.on_entry([&](std::string s) {
@@ -146,11 +157,13 @@ void WebConnectivityTest::OnEntry(const Nan::FunctionCallbackInfo<v8::Value>& in
     };
     Nan::MakeCallback(Nan::GetCurrentContext()->Global(), cb, argc, argv);
   });
+  */
 }
 
 void WebConnectivityTest::OnEvent(const Nan::FunctionCallbackInfo<v8::Value>& info) {
   assert(info.Length() >= 1);
 
+  /*
   WebConnectivityTest* obj = ObjectWrap::Unwrap<WebConnectivityTest>(info.Holder());
 
   obj->test.on_event([&](const char *s) {
@@ -161,11 +174,13 @@ void WebConnectivityTest::OnEvent(const Nan::FunctionCallbackInfo<v8::Value>& in
     };
     Nan::MakeCallback(Nan::GetCurrentContext()->Global(), cb, argc, argv);
   });
+  */
 }
 
 void WebConnectivityTest::OnEnd(const Nan::FunctionCallbackInfo<v8::Value>& info) {
   assert(info.Length() >= 1);
 
+  /*
   WebConnectivityTest* obj = ObjectWrap::Unwrap<WebConnectivityTest>(info.Holder());
 
   obj->test.on_end([&]() {
@@ -176,11 +191,13 @@ void WebConnectivityTest::OnEnd(const Nan::FunctionCallbackInfo<v8::Value>& info
     };
     Nan::MakeCallback(Nan::GetCurrentContext()->Global(), cb, argc, argv);
   });
+  */
 }
 
 void WebConnectivityTest::OnBegin(const Nan::FunctionCallbackInfo<v8::Value>& info) {
   assert(info.Length() >= 1);
 
+  /*
   WebConnectivityTest* obj = ObjectWrap::Unwrap<WebConnectivityTest>(info.Holder());
 
   obj->test.on_begin([&]() {
@@ -191,6 +208,7 @@ void WebConnectivityTest::OnBegin(const Nan::FunctionCallbackInfo<v8::Value>& in
     };
     Nan::MakeCallback(Nan::GetCurrentContext()->Global(), cb, argc, argv);
   });
+  */
 }
 
 void WebConnectivityTest::SetErrorFilepath(const Nan::FunctionCallbackInfo<v8::Value>& info) {
