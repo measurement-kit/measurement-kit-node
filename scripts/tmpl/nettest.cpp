@@ -48,8 +48,6 @@ void {{ nettestPascal}}::New(const Nan::FunctionCallbackInfo<v8::Value>& info) {
       options = info[0]->ToObject();
     }
 
-    // XXX how do we abstract this so that objects don't get sliced and we
-    // don't have to duplicate this in every sub-class?
     {{ nettestPascal}}* obj = new {{ nettestPascal}}(options);
     obj->Wrap(info.This());
     info.GetReturnValue().Set(info.This());
@@ -104,28 +102,32 @@ void {{ nettestPascal}}::OnProgress(const Nan::FunctionCallbackInfo<v8::Value>& 
   });
   */
 }
+// Maybe useful:
+// https://github.com/paulot/NodeVector/blob/6ab02ffc29eba0579aafb556b8cfbeb4fc49806b/src/NodeVector.cpp
 
 void {{ nettestPascal}}::OnLog(const Nan::FunctionCallbackInfo<v8::Value>& info) {
   assert(info.Length() >= 1);
 
-  v8::Isolate *isolate = v8::Isolate::GetCurrent();
-
-  v8::Persistent<v8::Function, v8::CopyablePersistentTraits<v8::Function>> pCallback(
-    isolate,
-    info[0].As<v8::Function>()
-  );
+  //Nan::HandleScope scope;
+  Nan::Persistent<v8::Value, v8::CopyablePersistentTraits<v8::Value>> persistentCb(info[0]);
 
   {{ nettestPascal}}* obj = ObjectWrap::Unwrap<{{ nettestPascal}}>(info.Holder());
-  obj->test.on_log([pCallback](int level, const char *s) {
-    v8::Local<v8::Function> cb = Nan::New(pCallback);
+  obj->test.on_log([persistentCb](int level, const char *s){
+    mk::warn("I am in the log callback");
+    mk::warn("  bis");
+    auto antani = std::string("xxx");
+    mk::warn("  tris");
+    //Nan::EscapableHandleScope eScope;
+    mk::warn("  escaping");
+    //v8::Local<v8::Function> cb = eScope.Escape(Nan::New(persistentCb)).As<v8::Function>();
+    v8::Local<v8::Function> cb = Nan::New(persistentCb).As<v8::Function>();
 
-    // XXX We need to handle the deletion of these somewhere
-    // gCallback.Reset();
     const int argc = 2;
     v8::Local<v8::Value> argv[argc] = {
       Nan::New(level),
       Nan::New(std::string(s)).ToLocalChecked()
     };
+    mk::warn("  calling");
     Nan::MakeCallback(Nan::GetCurrentContext()->Global(), cb, argc, argv);
   });
 }
@@ -249,6 +251,12 @@ void {{ nettestPascal}}::Start(const Nan::FunctionCallbackInfo<v8::Value>& info)
 void {{ nettestPascal}}::Run(const Nan::FunctionCallbackInfo<v8::Value>& info) {
   // This method is blocking
   assert(info.Length() >= 1);
+
+  /*
+  XXX do I need to do this?
+  v8::Local<v8::Object> obj = New<v8::Object>();
+  persistentHandle.Reset(obj);
+  */
 
   v8::Local<v8::Function> cb = info[0].As<v8::Function>();
 

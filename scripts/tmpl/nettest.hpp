@@ -3,6 +3,7 @@
 #define MK_NODE_NETTESTS_{{ nettestSnakeUpper }}_H
 
 #include <nan.h>
+#include <measurement_kit/common.hpp>
 #include <measurement_kit/nettests.hpp>
 
 class {{ nettestPascal}} : public Nan::ObjectWrap {
