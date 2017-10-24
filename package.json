@@ -12,12 +12,6 @@
     "cmake-js": "^3.5.0",
     "nan": "^2.7.0"
   },
-  "scripts": {
-    "build": "cmake-js build",
-    "rebuild": "npm run codegen && cmake-js -l=silly rebuild",
-    "install": "cmake-js compile",
-    "codegen": "node scripts/gen-nettests.js"
-  },
   "devDependencies": {
     "change-case": "^3.0.1",
     "mustache": "^2.3.0",
