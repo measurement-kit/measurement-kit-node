@@ -9,6 +9,11 @@ static void mkuv_destroy(uv_handle_t *handle);
 }
 
 namespace mk {
+
+#if MK_VERSION_MAJOR > 0 || MK_VERSION_MINOR > 7
+template <typename T> using Var<T> = SharedPointer<T>;
+#endif
+
 namespace node {
 
 // # Runner
