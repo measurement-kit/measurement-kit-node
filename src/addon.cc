@@ -204,6 +204,10 @@ class Runner {
         } else {
             self->nettest->run();
         }
+
+        // At the end of RunOrStart() we dispose of our reference to the
+        // nettest, which breaks references loop. (XXX How so? Explain!)
+        self->nettest = nullptr;
     }
 
     // ## Public Attributes
