@@ -332,6 +332,20 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
   public:
     // ## Constructors
 
+    // The static constructor is used when the user invokes the template
+    // function without the `new` operator (e.g. `let x = FooTest()`).
+    //
+    // We use the static factory pattern to access it to avoid several
+    // compiler warning we would get if the variable was defined as a
+    // static field, because in such case it would not be clear to the
+    // compiler exactly where the variable is instantiated. Normally
+    // one can get away with defining explicitly the instantiation but
+    // this is a template and so it's easier to do like this.
+    static Nan::Persistent<v8::Function> &constructor() {
+        static Nan::Persistent<v8::Function> instance;
+        return instance;
+    }
+
     // The Initialize static method will create the function template that
     // JavaScript will use to create an instance of this class, and will
     // store such function into the exports object.
@@ -370,7 +384,12 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
         // the exports, so that it is not garbage collected. This MUST be the
         // last action we perform. Doing it earlier will mean that not all
         // the methods will be available from Node.
+        //
+        // We also store a copy of the function is constructor, such that
+        // it's possible to deal with the case where `new` is not used when
+        // an object is constructed (i.e. `let x = FooTest();`).
         exports->Set(name, fun_template->GetFunction());
+        constructor().Reset(fun_template->GetFunction());
     }
 
     // The New static method is the JavaScript object constructor. We store
@@ -379,15 +398,26 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
     // why we have a second layer of indirection with NettestRunner is
     // to keep separate internal and external objects and thus simplify
     // reference based memory management (been there, learned that).
+    //
+    // Here we deal both with the case where `new` is used (e.g.
+    // `let foo = new FooTest()`) and with the case in which instead
+    // `new` is not used (e.g. `let foo = FooTest()`).
     static void New(const Nan::FunctionCallbackInfo<v8::Value> &info) {
-        if (!info.IsConstructCall()) {
-            Nan::ThrowError("not invoked as constructor");
-            return;
-        }
         if (info.Length() != 0) {
             Nan::ThrowError("invalid number of arguments");
             return;
         }
+        if (!info.IsConstructCall()) {
+            // Case: `let foo = FooTest()`
+            Nan::HandleScope scope;
+            v8::Local<v8::Function> tpl = Nan::New<v8::Function>(constructor());
+            info.GetReturnValue().Set(
+                    tpl->NewInstance(info.GetIsolate()->GetCurrentContext(), 0,
+                                nullptr)
+                            .ToLocalChecked());
+            return;
+        }
+        // Case: `let foo = new FooTest()`
         NettestWrap *nw = new NettestWrap{};
         nw->running.reset(new RunningNettest{new Nettest{}});
         nw->Wrap(info.This());
