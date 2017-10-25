@@ -1,5 +1,7 @@
+#include <list>
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/nettests.hpp>
+#include <mutex>
 #include <nan.h>
 #include <uv.h>
 
@@ -10,8 +12,9 @@ static void mkuv_destroy(uv_handle_t *handle);
 
 namespace mk {
 
+// Var was renamed SharedPtr in MK v0.8.0-dev
 #if MK_VERSION_MAJOR > 0 || MK_VERSION_MINOR > 7
-template <typename T> using Var<T> = SharedPointer<T>;
+template <typename T> using Var = SharedPtr<T>;
 #endif
 
 namespace node {
@@ -425,7 +428,7 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
             v8::Local<v8::Function> tpl = Nan::New<v8::Function>(constructor());
             info.GetReturnValue().Set(
                     tpl->NewInstance(info.GetIsolate()->GetCurrentContext(), 0,
-                                nullptr)
+                               nullptr)
                             .ToLocalChecked());
             return;
         }
