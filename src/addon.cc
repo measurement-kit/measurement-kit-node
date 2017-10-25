@@ -113,6 +113,48 @@ class RunningNettest {
         // locking because we should not modify the callbacks after the
         // test has been started.
 
+        if (!!self->begin_cb) {
+            self->nettest->on_begin([self]() {
+                self->SuspendOn([self]() {
+                    Nan::HandleScope scope;
+                    self->begin_cb->Call(0, nullptr);
+                });
+            });
+        }
+
+        if (!!self->end_cb) {
+            self->nettest->on_end([self]() {
+                self->SuspendOn([self]() {
+                    Nan::HandleScope scope;
+                    self->end_cb->Call(0, nullptr);
+                });
+            });
+        }
+
+        if (!!self->entry_cb) {
+            self->nettest->on_entry([self](std::string s) {
+                self->SuspendOn([self, s]() {
+                    Nan::HandleScope scope;
+                    const int argc = 1;
+                    v8::Local<v8::Value> argv[argc] = {
+                            Nan::New(s).ToLocalChecked()};
+                    self->entry_cb->Call(argc, argv);
+                });
+            });
+        }
+
+        if (!!self->event_cb) {
+            self->nettest->on_event([self](const char *s) {
+                self->SuspendOn([ self, mcopy = std::string(s) ]() {
+                    Nan::HandleScope scope;
+                    const int argc = 1;
+                    v8::Local<v8::Value> argv[argc] = {
+                            Nan::New(mcopy).ToLocalChecked()};
+                    self->event_cb->Call(argc, argv);
+                });
+            });
+        }
+
         if (!!self->log_cb) {
             self->nettest->on_log([self](uint32_t level, const char *msg) {
                 self->SuspendOn([ self, level, mcopy = std::string(msg) ]() {
