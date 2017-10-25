@@ -1,3 +1,4 @@
-node_modules
-build
-crash.log
+.DS_Store
+/build
+/crash.log
+/node_modules
