@@ -103,9 +103,12 @@ class RunningNettest {
         });
 
         // Whenever an MK callback is called, this method captures all the
-        // persistent state pertaining to such callback into a lambda closure
-        // and suspends the execution of the lambda. Such execution will
-        // resume when libuv will callback us from its main I/O loop.
+        // state pertaining to such callback into a lambda closure and suspends
+        // the execution of the lambda. Such execution will resume when libuv
+        // will callback us from its main I/O loop.
+        //
+        // It is important to store into the closure persistent state (i.e. no
+        // pointers or references) or wil will segfault.
         //
         // The act of adding a lambda to a list of suspended lambda requires
         // us to lock a mutex to prevent data races. Apart from that, the
@@ -160,8 +163,8 @@ class RunningNettest {
                 self->SuspendOn([ self, level, mcopy = std::string(msg) ]() {
                     Nan::HandleScope scope;
                     const int argc = 2;
-                    v8::Local<v8::Value> argv[argc] = {Nan::New(level),
-                            Nan::New(mcopy).ToLocalChecked()};
+                    v8::Local<v8::Value> argv[argc] = {
+                            Nan::New(level), Nan::New(mcopy).ToLocalChecked()};
                     self->log_cb->Call(argc, argv);
                 });
             });
@@ -324,7 +327,7 @@ namespace node {
 //
 // After you have called either Run or Start, it will be an error to attempt
 // to call any other method of the test again. The code at this level will
-// check that and throw an exception if that occurs.
+// check that, and throw an exception if that occurs.
 template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
   public:
     // ## Constructors
@@ -338,33 +341,36 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
         // The function template will cause the New static method of this
         // class to be invoked for constructing a new object.
         v8::Local<v8::String> name = Nan::New(cname).ToLocalChecked();
-        auto ctor = Nan::New<v8::FunctionTemplate>(New);
+        auto fun_template = Nan::New<v8::FunctionTemplate>(New);
 
         // We configure the function template such that an initial object is
         // created that is bound to the specific class name, has an internal
         // field for communication with C++, and has all the required methods.
-        ctor->SetClassName(name);
-        ctor->InstanceTemplate()->SetInternalFieldCount(1);
-        Nan::SetPrototypeMethod(ctor, "add_input", AddInput);
-        Nan::SetPrototypeMethod(ctor, "add_input_filepath", AddInputFilepath);
-        Nan::SetPrototypeMethod(ctor, "set_error_filepath", SetErrorFilepath);
-        Nan::SetPrototypeMethod(ctor, "set_options", SetOptions);
-        Nan::SetPrototypeMethod(ctor, "set_output_filepath", SetOutputFilepath);
-        Nan::SetPrototypeMethod(ctor, "set_verbosity", SetVerbosity);
-        Nan::SetPrototypeMethod(ctor, "on_begin", OnBegin);
-        Nan::SetPrototypeMethod(ctor, "on_end", OnEnd);
-        Nan::SetPrototypeMethod(ctor, "on_entry", OnEntry);
-        Nan::SetPrototypeMethod(ctor, "on_event", OnEvent);
-        Nan::SetPrototypeMethod(ctor, "on_log", OnLog);
-        Nan::SetPrototypeMethod(ctor, "on_progress", OnProgress);
-        Nan::SetPrototypeMethod(ctor, "run", Run);
-        Nan::SetPrototypeMethod(ctor, "start", Start);
+        fun_template->SetClassName(name);
+        fun_template->InstanceTemplate()->SetInternalFieldCount(1);
+        Nan::SetPrototypeMethod(fun_template, "add_input", AddInput);
+        Nan::SetPrototypeMethod(
+                fun_template, "add_input_filepath", AddInputFilepath);
+        Nan::SetPrototypeMethod(
+                fun_template, "set_error_filepath", SetErrorFilepath);
+        Nan::SetPrototypeMethod(fun_template, "set_options", SetOptions);
+        Nan::SetPrototypeMethod(
+                fun_template, "set_output_filepath", SetOutputFilepath);
+        Nan::SetPrototypeMethod(fun_template, "set_verbosity", SetVerbosity);
+        Nan::SetPrototypeMethod(fun_template, "on_begin", OnBegin);
+        Nan::SetPrototypeMethod(fun_template, "on_end", OnEnd);
+        Nan::SetPrototypeMethod(fun_template, "on_entry", OnEntry);
+        Nan::SetPrototypeMethod(fun_template, "on_event", OnEvent);
+        Nan::SetPrototypeMethod(fun_template, "on_log", OnLog);
+        Nan::SetPrototypeMethod(fun_template, "on_progress", OnProgress);
+        Nan::SetPrototypeMethod(fun_template, "run", Run);
+        Nan::SetPrototypeMethod(fun_template, "start", Start);
 
         // Once we have configured the function template, we register it into
         // the exports, so that it is not garbage collected. This MUST be the
         // last action we perform. Doing it earlier will mean that not all
         // the methods will be available from Node.
-        exports->Set(name, ctor->GetFunction());
+        exports->Set(name, fun_template->GetFunction());
     }
 
     // The New static method is the JavaScript object constructor. We store
