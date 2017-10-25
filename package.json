@@ -4,6 +4,7 @@
   "license": "MIT",
   "libmeasurement-kit": "0.8.0-alpha",
   "description": "Wrapper around libmeasurement-kit",
+  "repository": "https://github.com/measurement-kit/measurement-kit-node",
   "main": "lib/index.js",
   "gypfile": true,
   "dependencies": {
