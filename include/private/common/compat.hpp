@@ -6,17 +6,18 @@
 
 #include <measurement_kit/common.hpp>
 
-// Currently, this code does not work reliably with MK < 0.8
+// This implementation only works reliably for measurement-kit >= 0.8.0
 #if MK_VERSION_MAJOR < 1 && MK_VERSION_MINOR < 8
-#error "You need MK >= 0.8.0"
+#warning "This addon will not work reliably with measurement-kit < v0.8.0"
+
+namespace mk {
+template <typename T> using SharedPtr = Var<T>;
+} // namespace mk
 #endif
 
 namespace mk {
 
-// Bindings initially written for MK v0.7.x and currently still using
-// `Var<T>` rather than `SharedPtr<T>` (renamed happened in v0.8).
-template <typename T> using Var = SharedPtr<T>;
-
+// These macros are not defined as of measurement-kit v0.8.0-alpha
 #if (!defined MK_MOCK && !defined MK_MOCK_AS)
 /*
 Simplifies life when you use templates for mocking APIs because

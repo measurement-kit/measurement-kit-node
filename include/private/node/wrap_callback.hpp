@@ -10,7 +10,11 @@
 namespace mk {
 namespace node {
 
-Var<Nan::Callback> WrapCallback(v8::Local<v8::Value> value) {
+// The wrap_callback() free function is a syntactic sugar for converting
+// a v8::Value into a Nan::Callback. The latter is a persistent type suitable
+// for wrapping a function to be called at a later time. It turns out that
+// such callback must be called from Node's main loop (i.e. uv_run()).
+Var<Nan::Callback> wrap_callback(v8::Local<v8::Value> value) {
     return Var<Nan::Callback>{new Nan::Callback{value.As<v8::Function>()}};
 }
 
