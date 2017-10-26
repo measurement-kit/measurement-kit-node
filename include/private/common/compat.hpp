@@ -6,9 +6,13 @@
 
 #include <measurement_kit/common.hpp>
 
-// This implementation only works reliably for measurement-kit >= 0.8.0
-#if MK_VERSION_MAJOR < 1 && MK_VERSION_MINOR < 8
-#warning "This addon will not work reliably with measurement-kit < v0.8.0"
+// We have seen that with MK v0.7.10 most tests do not break out of libuv
+// loop, most likely because of reference loops. The only test that currently
+// works correctly is web connectivity. I wonder if it's because of the test
+// or because of the fact it's the only test with multiple input. I've also
+// seen that MK v0.9.0-dev has much less problems instead.
+#if MK_VERSION_MAJOR < 1 && MK_VERSION_MINOR < 9
+#warning "This addon will not work reliably with measurement-kit < v0.9.0"
 
 namespace mk {
 template <typename T> using SharedPtr = Var<T>;

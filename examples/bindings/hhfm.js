@@ -1,7 +1,7 @@
 const mk = require('bindings')('measurement-kit')
 console.log(`Using MK bindings directly; MK version: ${mk.version()}`)
-const hhfm = mk.HttpHeaderFieldManipulationTest
-hhfm()
+const test = mk.HttpHeaderFieldManipulationTest
+test()
   .on_begin(() => console.log("beginning test"))
   .on_progress((percent, message) => {
     console.log(`${percent * 100}%: ${message}`)

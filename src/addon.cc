@@ -24,7 +24,14 @@ static NAN_METHOD(version) {
 // The initialize function fills in the exports for this module.
 NAN_MODULE_INIT(initialize) {
     REGISTER_FUNC("version", version);
+    REGISTER_TEST(DashTest);
+    REGISTER_TEST(DnsInjectionTest);
     REGISTER_TEST(HttpHeaderFieldManipulationTest);
+    REGISTER_TEST(HttpInvalidRequestLineTest);
+    REGISTER_TEST(MeekFrontedRequestsTest);
+    REGISTER_TEST(MultiNdtTest);
+    REGISTER_TEST(NdtTest);
+    REGISTER_TEST(TcpConnectTest);
     REGISTER_TEST(WebConnectivityTest);
 }
 

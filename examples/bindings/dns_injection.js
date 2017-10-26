@@ -1,6 +1,6 @@
 const mk = require('bindings')('measurement-kit')
 console.log(`Using MK bindings directly; MK version: ${mk.version()}`)
-const test = mk.WebConnectivityTest
+const test = mk.DnsInjectionTest
 test()
   .on_begin(() => console.log("beginning test"))
   .on_progress((percent, message) => {
@@ -14,7 +14,5 @@ test()
   .on_end(() => console.log("ending test"))
   .set_options("no_file_report", 1)
   .set_verbosity(1 /* MK_LOG_INFO */)
-  .add_input("https://ooni.torproject.org/")
-  .add_input("https://www.kernel.org/")
-  .add_input("https://slashdot.org/")
+  .add_input("www.torproject.org")
   .start(() => console.log("final callback called"))
