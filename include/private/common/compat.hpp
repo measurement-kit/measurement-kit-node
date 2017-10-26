@@ -6,15 +6,18 @@
 
 #include <measurement_kit/common.hpp>
 
-namespace mk {
-
-// Before MK v0.8.0, SharedPtr was called Var. In this library we use Var and
-// we create a specific alias for when MK is >= v0.8.0.
-#if MK_VERSION_MAJOR > 0 || MK_VERSION_MINOR > 7
-template <typename T> using Var = SharedPtr<T>;
+// Currently, this code does not work reliably with MK < 0.8
+#if MK_VERSION_MAJOR < 1 && MK_VERSION_MINOR < 8
+#error "You need MK >= 0.8.0"
 #endif
 
-#if MK_VERSION_MAJOR > 0 || (MK_VERSION_MINOR < 9)
+namespace mk {
+
+// Bindings initially written for MK v0.7.x and currently still using
+// `Var<T>` rather than `SharedPtr<T>` (renamed happened in v0.8).
+template <typename T> using Var = SharedPtr<T>;
+
+#if (!defined MK_MOCK && !defined MK_MOCK_AS)
 /*
 Simplifies life when you use templates for mocking APIs because
 allows you to write the following:
@@ -34,7 +37,7 @@ Which is arguably faster than writing the following:
 // Similar to MK_MOCK but with alias
 #define MK_MOCK_AS(name_, alias_) decltype(name_) alias_ = name_
 
-#endif // ...
+#endif // !defined MK_MOCK && !defined MK_MOCK_AS
 
 } // namespace mk
 #endif
