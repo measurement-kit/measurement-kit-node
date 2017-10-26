@@ -364,7 +364,7 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
     }
 
     // Async is the object used to route MK callbacks to libuv loop.
-    Var<UvAsyncCtx<>> async;
+    SharedPtr<UvAsyncCtx<>> async;
 
     // Nettest is the test we want to execute.
     Nettest nettest;
