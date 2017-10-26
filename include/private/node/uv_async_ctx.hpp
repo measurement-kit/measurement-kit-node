@@ -4,14 +4,14 @@
 #ifndef PRIVATE_NODE_UV_ASYNC_CTX_HPP
 #define PRIVATE_NODE_UV_ASYNC_CTX_HPP
 
-#include "compat.hpp"
+#include "private/common/compat.hpp"
 #include <list>
 #include <mutex>
 #include <uv.h>
 
 extern "C" {
-static void mkuv_resume(uv_async_t *async);
-static void mkuv_delete(uv_handle_t *handle);
+static inline void mkuv_resume(uv_async_t *async);
+static inline void mkuv_delete(uv_handle_t *handle);
 }
 
 namespace mk {
@@ -59,8 +59,8 @@ template <MK_MOCK(uv_async_init), MK_MOCK(uv_async_send)> class UvAsyncCtx {
     // Make() constructs a UvAsyncCtx instance.
     static Var<UvAsyncCtx> Make() {
         Var<UvAsyncCtx> self{new UvAsyncCtx};
-        self->self = async; // Self reference modeling usage by libuv C code
-        self->async.data = async.get();
+        self->self = self; // Self reference modeling usage by libuv C code
+        self->async.data = self.get();
         if (uv_async_init(uv_default_loop(), &self->async, mkuv_resume)) {
             throw std::runtime_error("uv_async_init");
         }
@@ -73,10 +73,10 @@ template <MK_MOCK(uv_async_init), MK_MOCK(uv_async_send)> class UvAsyncCtx {
     // of all the callbacks that need to be resumed. Of course, this method is
     // thread safe, since multiple threads can operate on the list. It is key
     // to move `f` so to give libuv's thread unique ownership.
-    static void SuspendOn(Var<UvAsyncCtx> self, std::function<void()> &&f) {
+    static void SuspendOn(Var<UvAsyncCtx> self, std::function<void()> &&func) {
         std::unique_lock<std::recursive_mutex> _{self->mutex};
         self->suspended.push_back(std::move(func));
-        if (uv_async_send(&async) != 0) {
+        if (uv_async_send(&self->async) != 0) {
             throw std::runtime_error("uv_async_send");
         }
     }
@@ -149,15 +149,15 @@ template <MK_MOCK(uv_async_init), MK_MOCK(uv_async_send)> class UvAsyncCtx {
 
 // The mkuv_resume() C callback is called by libuv's I/O loop thread
 // to resume execution of the suspended callbacks.
-static void mkuv_resume(uv_async_t *async) {
-    mk::node::UvAsyncCtx::Resume(async);
+static inline void mkuv_resume(uv_async_t *async) {
+    mk::node::UvAsyncCtx<>::Resume(async);
 }
 
 // The mkuv_delete() C callback is called by libuv's I/O loop thread when
 // libuv has successfully closed the async handle, to tell us that now it's
 // safe to dispose of the memory associated with such handle.
-static void mkuv_delete(uv_handle_t *handle) {
-    mk::node::UvAsyncCtx::FinishDelete(handle);
+static inline void mkuv_delete(uv_handle_t *handle) {
+    mk::node::UvAsyncCtx<>::FinishDelete(handle);
 }
 
 #endif
