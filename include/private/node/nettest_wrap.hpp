@@ -13,6 +13,7 @@
 #include <mutex>
 #include <nan.h>
 #include <uv.h>
+#include <iostream>
 
 namespace mk {
 namespace node {
@@ -132,7 +133,10 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
         info.GetReturnValue().Set(info.This());
     }
 
-    NettestWrap() { async = UvAsyncCtx<>::Make(); }
+    NettestWrap() {
+        async = UvAsyncCtx<>::Make();
+        nettest.reset(new Nettest);
+    }
 
     // ## Value Setters
 
@@ -141,7 +145,7 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
     // extra input has basically no visible effect.
     static void AddInput(const Nan::FunctionCallbackInfo<v8::Value> &info) {
         SetValue(1, info, [&info](NettestWrap *self) {
-            self->nettest.add_input(
+            self->nettest->add_input(
                     *v8::String::Utf8Value{info[0]->ToString()});
         });
     }
@@ -152,7 +156,7 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
     static void AddInputFilepath(
             const Nan::FunctionCallbackInfo<v8::Value> &info) {
         SetValue(1, info, [&info](NettestWrap *self) {
-            self->nettest.add_input_filepath(
+            self->nettest->add_input_filepath(
                     *v8::String::Utf8Value{info[0]->ToString()});
         });
     }
@@ -162,7 +166,7 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
     static void SetErrorFilepath(
             const Nan::FunctionCallbackInfo<v8::Value> &info) {
         SetValue(1, info, [&info](NettestWrap *self) {
-            self->nettest.set_error_filepath(
+            self->nettest->set_error_filepath(
                     *v8::String::Utf8Value{info[0]->ToString()});
         });
     }
@@ -171,7 +175,7 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
     // consult MK documentation for more information on available options.
     static void SetOptions(const Nan::FunctionCallbackInfo<v8::Value> &info) {
         SetValue(2, info, [&info](NettestWrap *self) {
-            self->nettest.set_options(
+            self->nettest->set_options(
                     *v8::String::Utf8Value{info[0]->ToString()},
                     *v8::String::Utf8Value{info[1]->ToString()});
         });
@@ -183,7 +187,7 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
     static void SetOutputFilepath(
             const Nan::FunctionCallbackInfo<v8::Value> &info) {
         SetValue(1, info, [&info](NettestWrap *self) {
-            self->nettest.set_output_filepath(
+            self->nettest->set_output_filepath(
                     *v8::String::Utf8Value{info[0]->ToString()});
         });
     }
@@ -193,7 +197,7 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
     // makes MK even more verbose.
     static void SetVerbosity(const Nan::FunctionCallbackInfo<v8::Value> &info) {
         SetValue(1, info, [&info](NettestWrap *self) {
-            self->nettest.set_verbosity(info[0]->Uint32Value());
+            self->nettest->set_verbosity(info[0]->Uint32Value());
         });
     }
 
@@ -203,7 +207,7 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
     // beginning of the network test.
     static void OnBegin(const Nan::FunctionCallbackInfo<v8::Value> &info) {
         SetValue(1, info, [&info](NettestWrap *self) {
-            self->nettest.on_begin([
+            self->nettest->on_begin([
                 async = self->async, callback = WrapCallback(info[0])
             ]() {
                 UvAsyncCtx<>::SuspendOn(async, [callback]() {
@@ -218,7 +222,7 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
     // measurements have been performed and before closing the report.
     static void OnEnd(const Nan::FunctionCallbackInfo<v8::Value> &info) {
         SetValue(1, info, [&info](NettestWrap *self) {
-            self->nettest.on_end([
+            self->nettest->on_end([
                 async = self->async, callback = WrapCallback(info[0])
             ]() {
                 UvAsyncCtx<>::SuspendOn(async, [callback]() {
@@ -233,7 +237,7 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
     // measurement. The callback receives a serialized JSON as argument.
     static void OnEntry(const Nan::FunctionCallbackInfo<v8::Value> &info) {
         SetValue(1, info, [&info](NettestWrap *self) {
-            self->nettest.on_entry([
+            self->nettest->on_entry([
                 async = self->async, callback = WrapCallback(info[0])
             ](std::string s) {
                 UvAsyncCtx<>::SuspendOn(async, [callback, s]() {
@@ -252,7 +256,7 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
     // to report test-specific events that occurred.
     static void OnEvent(const Nan::FunctionCallbackInfo<v8::Value> &info) {
         SetValue(1, info, [&info](NettestWrap *self) {
-            self->nettest.on_event([
+            self->nettest->on_event([
                 async = self->async, callback = WrapCallback(info[0])
             ](const char *s) {
                 UvAsyncCtx<>::SuspendOn(async, [
@@ -274,7 +278,7 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
     // attempt to write logs on the standard error.
     static void OnLog(const Nan::FunctionCallbackInfo<v8::Value> &info) {
         SetValue(1, info, [&info](NettestWrap *self) {
-            self->nettest.on_log([
+            self->nettest->on_log([
                 async = self->async, callback = WrapCallback(info[0])
             ](uint32_t level, const char *s) {
                 UvAsyncCtx<>::SuspendOn(async, [
@@ -296,7 +300,7 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
     // about the progress of the test in percentage.
     static void OnProgress(const Nan::FunctionCallbackInfo<v8::Value> &info) {
         SetValue(1, info, [&info](NettestWrap *self) {
-            self->nettest.on_progress([
+            self->nettest->on_progress([
                 async = self->async, callback = WrapCallback(info[0])
             ](double percentage, const char *s) {
                 UvAsyncCtx<>::SuspendOn(async, [
@@ -369,22 +373,34 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
             Nan::ThrowError("invalid number of arguments");
             return;
         }
+        std::clog << "Use count nettest: " << This(info)->nettest.use_count() << std::endl;
+        std::clog << "Use count async: " << This(info)->async.use_count() << std::endl;
+        This(info)->nettest->on_destroy([
+            async = This(info)->async
+        ]() {
+            UvAsyncCtx<>::StartDelete(async);
+        });
         if (argc >= 1) {
-            This(info)->nettest.start([
+            This(info)->nettest->start([
                 async = This(info)->async, callback = WrapCallback(info[0])
             ]() {
+                std::clog << "Use count async: " << async.use_count() << std::endl;
                 UvAsyncCtx<>::SuspendOn(async, [callback]() {
                     Nan::HandleScope scope;
                     callback->Call(0, nullptr);
                 });
             });
         } else {
-            This(info)->nettest.run();
+            This(info)->nettest->run();
         }
+        std::clog << "Use count nettest: " << This(info)->nettest.use_count() << std::endl;
+        std::clog << "Use count async: " << This(info)->async.use_count() << std::endl;
+        //This(info)->nettest.reset();
+        //This(info)->async.reset();
     }
 
     Var<UvAsyncCtx<>> async;
-    Nettest nettest;
+    Var<Nettest> nettest;
 };
 
 } // namespace node
