@@ -6,6 +6,10 @@
 
 #include <measurement_kit/common.hpp>
 
+#ifndef MK_VERSION_MAJOR
+#error "Too old version of measurement-kit"
+#endif
+
 // We have seen that with MK v0.7.10 most tests do not break out of libuv
 // loop, most likely because of reference loops. The only test that currently
 // works correctly is web connectivity. I wonder if it's because of the test
