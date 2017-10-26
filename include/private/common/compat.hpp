@@ -2,7 +2,7 @@
 // Measurement-kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 #ifndef PRIVATE_COMMON_COMPAT_HPP
-#define PRIVAYE_COMMON_COMPAT_HPP
+#define PRIVATE_COMMON_COMPAT_HPP
 
 #include <measurement_kit/common.hpp>
 
