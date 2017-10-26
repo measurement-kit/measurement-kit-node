@@ -4,6 +4,7 @@
   "license": "MIT",
   "libmeasurement-kit": "0.8.0-alpha",
   "description": "Wrapper around libmeasurement-kit",
+  "repository": "https://github.com/measurement-kit/measurement-kit-node",
   "main": "lib/index.js",
   "gypfile": true,
   "dependencies": {
@@ -12,12 +13,9 @@
     "cmake-js": "^3.5.0",
     "nan": "^2.7.0"
   },
-  "scripts": {
-    "build": "cmake-js build",
-    "rebuild": "cmake-js -l=silly rebuild",
-    "install": "cmake-js compile"
-  },
   "devDependencies": {
+    "change-case": "^3.0.1",
+    "mustache": "^2.3.0",
     "segfault-handler": "^1.0.0"
   }
 }
