@@ -14,19 +14,19 @@ To get a development environment setup ensure you have:
 * yarn
 * The [developer dependencies of measurement-kit](https://github.com/measurement-kit/measurement-kit/blob/master/doc/tutorial/unix.md#configure)
 
-Be sure to clone this repo with `git clone --recursive` as it contains
-sub-modules.
+Ensure you have the latest version of measurement-kit installed in
+`/usr/local/include/measurement_kit` & `/usr/local/lib/libmeasurement*`
 
-## Compiling
+Then run:
 
-To build the bindings run:
+```
+npm install
+```
+
+## Recompiling
+
+To rebbuild the bindings run:
 
 ```
 npm run rebuild
-```
-
-On macOS be sure to run this:
-
-```
-OPENSSL_ROOT_DIR=/usr/local/opt/openssl/ npm run rebuild
 ```
