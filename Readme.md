@@ -25,7 +25,7 @@ npm install
 
 ## Recompiling
 
-To rebbuild the bindings run:
+To rebuild the bindings run:
 
 ```
 npm run rebuild
