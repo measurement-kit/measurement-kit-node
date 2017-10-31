@@ -113,7 +113,7 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
 
     // NettestWrap() is the C++ constructor. It creates an instance of the
     // UvAsyncCtx<> context to route callbacks from C++ to Node.
-    NettestWrap() { async = UvAsyncCtx<>::make(); }
+    NettestWrap() { async_ctx = UvAsyncCtx<>::make(); }
 
     // ## Value Setters
 
@@ -187,9 +187,9 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
     static void on_begin(const Nan::FunctionCallbackInfo<v8::Value> &info) {
         set_value(1, info, [&info](NettestWrap *self) {
             self->nettest.on_begin([
-                async = self->async, callback = wrap_callback(info[0])
+                async_ctx = self->async_ctx, callback = wrap_callback(info[0])
             ]() {
-                UvAsyncCtx<>::suspend(async, [callback]() {
+                UvAsyncCtx<>::suspend(async_ctx, [callback]() {
                     // Implementation note: even if it seems superfluous, here
                     // we must add the scope otherwise the following call is
                     // going to fail because it's missing a scope.
@@ -205,9 +205,9 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
     static void on_end(const Nan::FunctionCallbackInfo<v8::Value> &info) {
         set_value(1, info, [&info](NettestWrap *self) {
             self->nettest.on_end([
-                async = self->async, callback = wrap_callback(info[0])
+                async_ctx = self->async_ctx, callback = wrap_callback(info[0])
             ]() {
-                UvAsyncCtx<>::suspend(async, [callback]() {
+                UvAsyncCtx<>::suspend(async_ctx, [callback]() {
                     Nan::HandleScope scope;
                     callback->Call(0, nullptr);
                 });
@@ -222,9 +222,9 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
     static void on_entry(const Nan::FunctionCallbackInfo<v8::Value> &info) {
         set_value(1, info, [&info](NettestWrap *self) {
             self->nettest.on_entry([
-                async = self->async, callback = wrap_callback(info[0])
+                async_ctx = self->async_ctx, callback = wrap_callback(info[0])
             ](std::string s) {
-                UvAsyncCtx<>::suspend(async, [callback, s]() {
+                UvAsyncCtx<>::suspend(async_ctx, [callback, s]() {
                     Nan::HandleScope scope;
                     const int argc = 1;
                     v8::Local<v8::Value> argv[argc] = {
@@ -240,9 +240,11 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
     static void on_event(const Nan::FunctionCallbackInfo<v8::Value> &info) {
         set_value(1, info, [&info](NettestWrap *self) {
             self->nettest.on_event([
-                async = self->async, callback = wrap_callback(info[0])
+                async_ctx = self->async_ctx, callback = wrap_callback(info[0])
             ](const char *s) {
-                UvAsyncCtx<>::suspend(async, [callback, s = std::string(s)]() {
+                UvAsyncCtx<>::suspend(async_ctx, [
+                        callback, s = std::string(s)
+                ]() {
                     Nan::HandleScope scope;
                     const int argc = 1;
                     v8::Local<v8::Value> argv[argc] = {
@@ -259,10 +261,10 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
     static void on_log(const Nan::FunctionCallbackInfo<v8::Value> &info) {
         set_value(1, info, [&info](NettestWrap *self) {
             self->nettest.on_log([
-                async = self->async, callback = wrap_callback(info[0])
+                async_ctx = self->async_ctx, callback = wrap_callback(info[0])
             ](uint32_t level, const char *s) {
                 UvAsyncCtx<>::suspend(
-                        async, [callback, level, s = std::string(s) ]() {
+                        async_ctx, [callback, level, s = std::string(s) ]() {
                     Nan::HandleScope scope;
                     const int argc = 2;
                     v8::Local<v8::Value> argv[argc] = {Nan::New(level),
@@ -278,10 +280,11 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
     static void on_progress(const Nan::FunctionCallbackInfo<v8::Value> &info) {
         set_value(1, info, [&info](NettestWrap *self) {
             self->nettest.on_progress([
-                async = self->async, callback = wrap_callback(info[0])
+                async_ctx = self->async_ctx, callback = wrap_callback(info[0])
             ](double percentage, const char *s) {
-                UvAsyncCtx<>::suspend(
-                        async, [ callback, percentage, s = std::string(s) ]() {
+                UvAsyncCtx<>::suspend(async_ctx, [
+                        callback, percentage, s = std::string(s)
+                ]() {
                     Nan::HandleScope scope;
                     const int argc = 2;
                     v8::Local<v8::Value> argv[argc] = {
@@ -346,14 +349,17 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
             Nan::ThrowError("invalid number of arguments");
             return;
         }
-        get_this(info)->nettest.on_destroy([async = get_this(info)->async]() {
-            UvAsyncCtx<>::start_delete(async);
+        get_this(info)->nettest.on_destroy([
+                async_ctx = get_this(info)->async_ctx
+        ]() {
+            UvAsyncCtx<>::start_delete(async_ctx);
         });
         if (argc >= 1) {
             get_this(info)->nettest.start([
-                async = get_this(info)->async, callback = wrap_callback(info[0])
+                async_ctx = get_this(info)->async_ctx,
+                callback = wrap_callback(info[0])
             ]() {
-                UvAsyncCtx<>::suspend(async, [callback]() {
+                UvAsyncCtx<>::suspend(async_ctx, [callback]() {
                     Nan::HandleScope scope;
                     callback->Call(0, nullptr);
                 });
@@ -364,7 +370,7 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
     }
 
     // Async is the object used to route MK callbacks to libuv loop.
-    SharedPtr<UvAsyncCtx<>> async;
+    SharedPtr<UvAsyncCtx<>> async_ctx;
 
     // Nettest is the test we want to execute.
     Nettest nettest;
