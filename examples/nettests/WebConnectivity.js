@@ -18,7 +18,6 @@ const options = {
   errorFilePath: '',
   outputFilePath: ''
 }
-
 wc = mk.WebConnectivity(options)
 wc.on('progress', (prog, s) => {
   console.log('progress', prog, s)
