@@ -1,2 +1,5 @@
-node_modules
-build
+.DS_Store
+/build
+/crash.log
+/node_modules
+package-lock.json
