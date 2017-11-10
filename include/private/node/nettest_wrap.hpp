@@ -61,7 +61,14 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
         Nan::SetPrototypeMethod(tpl, "add_input", add_input);
         Nan::SetPrototypeMethod(tpl, "add_input_filepath", add_input_filepath);
         Nan::SetPrototypeMethod(tpl, "set_error_filepath", set_error_filepath);
-        Nan::SetPrototypeMethod(tpl, "set_options", set_options);
+        //
+        // Note: `set_options` is deprecated as of v0.8.0-beta.1. Keeping
+        // nonetheless the old interface name in here for some time. To avoid
+        // a compiler warning, we map this however onto the `set_option` MK
+        // API because using `set_options` leads to deprecation warnings.
+        //
+        Nan::SetPrototypeMethod(tpl, "set_options", set_option);
+        Nan::SetPrototypeMethod(tpl, "set_option", set_option);
         Nan::SetPrototypeMethod(
                 tpl, "set_output_filepath", set_output_filepath);
         Nan::SetPrototypeMethod(tpl, "set_verbosity", set_verbosity);
@@ -149,11 +156,11 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
         });
     }
 
-    // The set_options setter allows to set test-specific options. You should
+    // The set_option setter allows to set test-specific options. You should
     // consult MK documentation for more information on available options.
-    static void set_options(const Nan::FunctionCallbackInfo<v8::Value> &info) {
+    static void set_option(const Nan::FunctionCallbackInfo<v8::Value> &info) {
         set_value(2, info, [&info](NettestWrap *self) {
-            self->nettest.set_options(
+            self->nettest.set_option(
                     *v8::String::Utf8Value{info[0]->ToString()},
                     *v8::String::Utf8Value{info[1]->ToString()});
         });
