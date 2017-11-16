@@ -4,7 +4,7 @@
 #ifndef PRIVATE_NODE_NETTEST_WRAP_HPP
 #define PRIVATE_NODE_NETTEST_WRAP_HPP
 
-#include "private/node/uv_async_ctx.hpp"
+#include "private/node/async.hpp"
 #include "private/node/wrap_callback.hpp"
 #include <measurement_kit/nettests.hpp>
 #include <nan.h>
