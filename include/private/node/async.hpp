@@ -113,25 +113,15 @@ class Context {
 
     /// The suspended field is the list of suspended callbacks.
     std::list<std::function<void()>> suspended;
-
-    /// The self field is used to keep the object alive until it can be
-    /// safely deleted. Libuv callbacks manipulating this class should
-    /// keep a copy of self on the stack, for correctness, to enforce a
-    /// lifecycle equal at least to the current scope.
-    ///
-    /// We could have used `std::enable_shared_from_this` but rather we
-    /// decided to have an always active shared pointer to really
-    /// gurantee that the object cannot be destroyed as long as the
-    /// underlying libevent loop is using it.
-    SharedPtr<Context> self;
 };
 
 /// make<>() constructs an Context instance. This function shall throw if an
 /// unrecoverable error occurs, as we do in other places in MK.
 template <MK_MOCK(uv_async_init)> static SharedPtr<Context> make() {
     SharedPtr<Context> ctx{new Context};
-    ctx->self = ctx; // Self reference modeling usage by libuv C code
-    ctx->async.data = ctx.get();
+    // We let the opaque libuv pointer point to a dynamically allocated
+    // shared pointer to the context to guarantee it'll be alive
+    ctx->async.data = new SharedPtr<Context>{ctx};
     if (uv_async_init(uv_default_loop(), &ctx->async, mkuv_resume)) {
         throw std::runtime_error("uv_async_init");
     }
@@ -179,8 +169,8 @@ static void start_delete(SharedPtr<Context> ctx) {
 static inline void mkuv_resume(uv_async_t *handle) {
     using namespace mk::node::async;
     using namespace mk;
-    Context *pctx = static_cast<Context *>(handle->data);
-    SharedPtr<Context> ctx = pctx->self; // Until end of scope, keep it safe
+    auto pctx = static_cast<SharedPtr<Context> *>(handle->data);
+    SharedPtr<Context> ctx{*pctx}; // Until end of scope, keep it safe
     std::list<std::function<void()>> functions;
     {
         std::unique_lock<std::recursive_mutex> _{ctx->mutex};
@@ -198,9 +188,7 @@ static inline void mkuv_delete(uv_handle_t *handle) {
     using namespace mk::node::async;
     using namespace mk;
     uv_async_t *async_handle = reinterpret_cast<uv_async_t *>(handle);
-    Context *pctx = static_cast<Context *>(async_handle->data);
-    SharedPtr<Context> ctx;
-    std::swap(ctx, pctx->self); // Remove ref and keep alive until end of scope
+    delete static_cast<SharedPtr<Context> *>(async_handle->data);
 }
 
 #endif
