@@ -12,50 +12,50 @@
 namespace mk {
 namespace node {
 
-// # NettestWrap
-//
-// The NettestWrap class template is the Node-visible object. It wraps
-// a mk::nettest::<T> test instance and uses a mk::node::UvAsyncCtx<> context
-// to safely route test callbacks to libuv I/O loop (i.e. Node loop).
+/// # NettestWrap
+///
+/// The NettestWrap class template is the Node-visible object. It wraps
+/// a mk::nettest::<T> test instance and uses a mk::node::UvAsyncCtx<> context
+/// to safely route test callbacks to libuv I/O loop (i.e. Node loop).
 template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
   public:
-    // ## Constructors
+    /// ## Constructors
 
-    // The static constructor() factory is used to retrieve the Node function
-    // called when the user doesn't use `new` to create an object, e.g.:
-    //
-    // ```C++
-    //     let foo = FooTest()
-    // ```
-    //
-    // We use the static factory pattern to access the Node constructor, rather
-    // than declaring a static C++ field, to avoid compiler warnings and
-    // refactoring issues caused by the facts that:
-    //
-    // 1. when you define a static attribute, you should also instantiate it
-    //    in the C++ file
-    //
-    // 2. this is a template, hence it's more syntax work to instantiate
-    //    also considering that we don't have a C++ file
-    //
-    // Thus, a static factory makes things simpler.
+    /// The static constructor() factory is used to retrieve the Node function
+    /// called when the user doesn't use `new` to create an object, e.g.:
+    ///
+    /// ```C++
+    ///     let foo = FooTest()
+    /// ```
+    ///
+    /// We use the static factory pattern to access the Node constructor, rather
+    /// than declaring a static C++ field, to avoid compiler warnings and
+    /// refactoring issues caused by the facts that:
+    ///
+    /// 1. when you define a static attribute, you should also instantiate it
+    ///    in the C++ file
+    ///
+    /// 2. this is a template, hence it's more syntax work to instantiate
+    ///    also considering that we don't have a C++ file
+    ///
+    /// Thus, a static factory makes things simpler.
     static Nan::Persistent<v8::Function> &constructor() {
         static Nan::Persistent<v8::Function> instance;
         return instance;
     }
 
-    // The initialize() static method will create the function template that
-    // JavaScript will use to create an instance of this class, and will
-    // store such function template into the exports object.
+    /// The initialize() static method will create the function template that
+    /// JavaScript will use to create an instance of this class, and will
+    /// store such function template into the exports object.
     static void initialize(const char *cname, v8::Local<v8::Object> exports) {
         Nan::HandleScope scope;
 
-        // initialize() will bind the function template to the make() method.
+        /// initialize() will bind the function template to the make() method.
         v8::Local<v8::String> name = Nan::New(cname).ToLocalChecked();
         auto tpl = Nan::New<v8::FunctionTemplate>(make);
 
-        // initialize() will also perform other initialization actions, e.g.
-        // adding all the methods to JavaScript object's prototype.
+        /// initialize() will also perform other initialization actions, e.g.
+        /// adding all the methods to JavaScript object's prototype.
         tpl->SetClassName(name);
         tpl->InstanceTemplate()->SetInternalFieldCount(1);
         Nan::SetPrototypeMethod(tpl, "add_input", add_input);
@@ -81,22 +81,22 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
         Nan::SetPrototypeMethod(tpl, "run", run);
         Nan::SetPrototypeMethod(tpl, "start", start);
 
-        // Once we have configured the function template, we register it into
-        // the exports, so that it is not garbage collected. This MUST be
-        // performed after we've finished configuring `tpl`, otherwise not
-        // all the fields will be exported to Node.
+        /// Once we have configured the function template, we register it into
+        /// the exports, so that it is not garbage collected. This MUST be
+        /// performed after we've finished configuring `tpl`, otherwise not
+        /// all the fields will be exported to Node.
         exports->Set(name, tpl->GetFunction());
 
-        // We also store a copy of `tpl` in `constructor()`, such that
-        // it's possible to deal with the case where `new` is not used when
-        // an object is constructed (i.e. `let foo = FooTest();`).
+        /// We also store a copy of `tpl` in `constructor()`, such that
+        /// it's possible to deal with the case where `new` is not used when
+        /// an object is constructed (i.e. `let foo = FooTest();`).
         constructor().Reset(tpl->GetFunction());
     }
 
-    // The make() static method is the JavaScript object "constructor".
-    // Here we deal both with the case where `new` is used (e.g.
-    // `let foo = new FooTest()`) and with the case in which instead
-    // `new` is not used (e.g. `let foo = FooTest()`).
+    /// The make() static method is the JavaScript object "constructor".
+    /// Here we deal both with the case where `new` is used (e.g.
+    /// `let foo = new FooTest()`) and with the case in which instead
+    /// `new` is not used (e.g. `let foo = FooTest()`).
     static void make(const Nan::FunctionCallbackInfo<v8::Value> &info) {
         if (info.Length() != 0) {
             Nan::ThrowError("invalid number of arguments");
@@ -118,15 +118,15 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
         info.GetReturnValue().Set(info.This());
     }
 
-    // NettestWrap() is the C++ constructor. It creates an instance of the
-    // UvAsyncCtx<> context to route callbacks from C++ to Node.
+    /// NettestWrap() is the C++ constructor. It creates an instance of the
+    /// UvAsyncCtx<> context to route callbacks from C++ to Node.
     NettestWrap() { async_ctx = UvAsyncCtx<>::make(); }
 
-    // ## Value Setters
+    /// ## Value Setters
 
-    // The add_input setter adds one input string to the list of input strings
-    // to be processed by this test. If the test takes no input, adding one
-    // extra input has basically no visible effect.
+    /// The add_input setter adds one input string to the list of input strings
+    /// to be processed by this test. If the test takes no input, adding one
+    /// extra input has basically no visible effect.
     static void add_input(const Nan::FunctionCallbackInfo<v8::Value> &info) {
         set_value(1, info, [&info](NettestWrap *self) {
             self->nettest.add_input(
@@ -134,9 +134,9 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
         });
     }
 
-    // The add_input_filepath setter adds one input file to the list of input
-    // file to be processed by this test. If the test takes no input, adding one
-    // extra input file has basically no visible effect.
+    /// The add_input_filepath setter adds one input file to the list of input
+    /// file to be processed by this test. If the test takes no input, adding
+    /// one extra input file has basically no visible effect.
     static void add_input_filepath(
             const Nan::FunctionCallbackInfo<v8::Value> &info) {
         set_value(1, info, [&info](NettestWrap *self) {
@@ -145,9 +145,9 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
         });
     }
 
-    // The set_error_filepath setter sets the path where logs will be written.
-    // Not setting the error filepath will prevent logs from being written on
-    // disk.
+    /// The set_error_filepath setter sets the path where logs will be written.
+    /// Not setting the error filepath will prevent logs from being written on
+    /// disk.
     static void set_error_filepath(
             const Nan::FunctionCallbackInfo<v8::Value> &info) {
         set_value(1, info, [&info](NettestWrap *self) {
@@ -156,8 +156,8 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
         });
     }
 
-    // The set_option setter allows to set test-specific options. You should
-    // consult MK documentation for more information on available options.
+    /// The set_option setter allows to set test-specific options. You should
+    /// consult MK documentation for more information on available options.
     static void set_option(const Nan::FunctionCallbackInfo<v8::Value> &info) {
         set_value(2, info, [&info](NettestWrap *self) {
             self->nettest.set_option(
@@ -166,9 +166,9 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
         });
     }
 
-    // The set_output_filepath setter sets the path where test report will be
-    // written. Not setting the output filepath will cause MK to try to write
-    // the report on an filepath with a test- and time-dependent name.
+    /// The set_output_filepath setter sets the path where test report will be
+    /// written. Not setting the output filepath will cause MK to try to write
+    /// the report on an filepath with a test- and time-dependent name.
     static void set_output_filepath(
             const Nan::FunctionCallbackInfo<v8::Value> &info) {
         set_value(1, info, [&info](NettestWrap *self) {
@@ -177,9 +177,9 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
         });
     }
 
-    // The set_verbosity setter allows to set logging verbosity. Zero is
-    // equivalent to WARNING, one to INFO, two to DEBUG and more than two
-    // makes MK even more verbose.
+    /// The set_verbosity setter allows to set logging verbosity. Zero is
+    /// equivalent to WARNING, one to INFO, two to DEBUG and more than two
+    /// makes MK even more verbose.
     static void set_verbosity(
             const Nan::FunctionCallbackInfo<v8::Value> &info) {
         set_value(1, info, [&info](NettestWrap *self) {
@@ -187,10 +187,10 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
         });
     }
 
-    // ## Callback Setters
+    /// ## Callback Setters
 
-    // The on_begin setter allows to set the callback called right at the
-    // beginning of the network test.
+    /// The on_begin setter allows to set the callback called right at the
+    /// beginning of the network test.
     static void on_begin(const Nan::FunctionCallbackInfo<v8::Value> &info) {
         set_value(1, info, [&info](NettestWrap *self) {
             self->nettest.on_begin([
@@ -207,8 +207,8 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
         });
     }
 
-    // The on_end setter allows to set the callback called after all
-    // measurements have been performed and before closing the report.
+    /// The on_end setter allows to set the callback called after all
+    /// measurements have been performed and before closing the report.
     static void on_end(const Nan::FunctionCallbackInfo<v8::Value> &info) {
         set_value(1, info, [&info](NettestWrap *self) {
             self->nettest.on_end([
@@ -222,10 +222,10 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
         });
     }
 
-    /* clang-format off */
+    // clang-format off
 
-    // The on_entry setter allows to set the callback called after each
-    // measurement. The callback receives a serialized JSON as argument.
+    /// The on_entry setter allows to set the callback called after each
+    /// measurement. The callback receives a serialized JSON as argument.
     static void on_entry(const Nan::FunctionCallbackInfo<v8::Value> &info) {
         set_value(1, info, [&info](NettestWrap *self) {
             self->nettest.on_entry([
@@ -242,8 +242,8 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
         });
     }
 
-    // The on_event setter allows to set the callback called during the test
-    // to report test-specific events that occurred.
+    /// The on_event setter allows to set the callback called during the test
+    /// to report test-specific events that occurred.
     static void on_event(const Nan::FunctionCallbackInfo<v8::Value> &info) {
         set_value(1, info, [&info](NettestWrap *self) {
             self->nettest.on_event([
@@ -262,9 +262,9 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
         });
     }
 
-    // The on_log setter allows to set the callback called for each log line
-    // emitted by the test. Not setting this callback means that MK will
-    // attempt to write logs on the standard error.
+    /// The on_log setter allows to set the callback called for each log line
+    /// emitted by the test. Not setting this callback means that MK will
+    /// attempt to write logs on the standard error.
     static void on_log(const Nan::FunctionCallbackInfo<v8::Value> &info) {
         set_value(1, info, [&info](NettestWrap *self) {
             self->nettest.on_log([
@@ -282,8 +282,8 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
         });
     }
 
-    // The on_progress setter allows to set the callback called to inform you
-    // about the progress of the test in percentage.
+    /// The on_progress setter allows to set the callback called to inform you
+    /// about the progress of the test in percentage.
     static void on_progress(const Nan::FunctionCallbackInfo<v8::Value> &info) {
         set_value(1, info, [&info](NettestWrap *self) {
             self->nettest.on_progress([
@@ -303,32 +303,32 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
         });
     }
 
-    /* clang-format on */
+    // clang-format on
 
-    // ## runners
+    /// ## runners
 
-    // The run method runs the test synchronously. This will block Node until
-    // the test is over. Perhaps not what you want in the common case, but
-    // it may be useful in some specific corner cases.
+    /// The run method runs the test synchronously. This will block Node until
+    /// the test is over. Perhaps not what you want in the common case, but
+    /// it may be useful in some specific corner cases.
     static void run(const Nan::FunctionCallbackInfo<v8::Value> &info) {
         run_or_start(0, info);
     }
 
-    // The start method runs the test asynchronously and calls the callback
-    // passed as argument when the test is done. Note that calling this method
-    // will cause Node's event loop to wait for the test to finish, but,
-    // unlike run, start will allow you to do also other things while you're
-    // waiting for the test to finish.
+    /// The start method runs the test asynchronously and calls the callback
+    /// passed as argument when the test is done. Note that calling this method
+    /// will cause Node's event loop to wait for the test to finish, but,
+    /// unlike run, start will allow you to do also other things while you're
+    /// waiting for the test to finish.
     static void start(const Nan::FunctionCallbackInfo<v8::Value> &info) {
         run_or_start(1, info);
     }
 
-    // ## Internals
+    /// ## Internals
 
   private:
-    // The set_value method is a convenience method. It will make sure
-    // that the number of arguments is the expected one. It also check whether
-    // either run() or start() was already called and throw in such case.
+    /// The set_value method is a convenience method. It will make sure
+    /// that the number of arguments is the expected one. It also check whether
+    /// either run() or start() was already called and throw in such case.
     static void set_value(int argc,
             const Nan::FunctionCallbackInfo<v8::Value> &info,
             std::function<void(NettestWrap *)> &&next) {
@@ -341,14 +341,14 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
         info.GetReturnValue().Set(info.This());
     }
 
-    // The get_this() method is a convenience method used by many others to
-    // quickly get the `this` pointer of the class.
+    /// The get_this() method is a convenience method used by many others to
+    /// quickly get the `this` pointer of the class.
     static NettestWrap *get_this(
             const Nan::FunctionCallbackInfo<v8::Value> &info) {
         return ObjectWrap::Unwrap<NettestWrap>(info.Holder());
     }
 
-    // The run_or_start method implements run() and start().
+    /// The run_or_start method implements run() and start().
     static void run_or_start(
             int argc, const Nan::FunctionCallbackInfo<v8::Value> &info) {
         Nan::HandleScope scope;
@@ -376,10 +376,10 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
         }
     }
 
-    // Async is the object used to route MK callbacks to libuv loop.
+    /// Async is the object used to route MK callbacks to libuv loop.
     SharedPtr<UvAsyncCtx<>> async_ctx;
 
-    // Nettest is the test we want to execute.
+    /// Nettest is the test we want to execute.
     Nettest nettest;
 };
 
