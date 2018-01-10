@@ -314,15 +314,12 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
             self->nettest.on_overall_data_usage([
                 async_ctx = self->async_ctx, callback = wrap_callback(info[0])
             ](DataUsage du) {
-                UvAsyncCtx<>::suspend(async_ctx, [callback, du]() {
+                async::suspend<>(async_ctx, [callback, du]() {
                     Nan::HandleScope scope;
                     const int argc = 2;
-                    // XXX can downcasting uint64_t to uint32_t create issues?
-                    const uint32_t down = du.down;
-                    const uint32_t up = du.up;
                     v8::Local<v8::Value> argv[argc] = {
-                            Nan::New(down),
-                            Nan::New(up)};
+                            Nan::New(static_cast<double>(du.down)),
+                            Nan::New(static_cast<double>(du.up))};
                     callback->Call(argc, argv);
                 });
             });
