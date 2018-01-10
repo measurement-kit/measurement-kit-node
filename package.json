@@ -1,6 +1,6 @@
 {
   "name": "measurement-kit",
-  "version": "0.1.0-alpha.5",
+  "version": "0.1.0-alpha.6",
   "license": "BSD-3-Clause",
   "libmeasurement-kit": "0.8.1",
   "description": "Wrapper around libmeasurement-kit",
