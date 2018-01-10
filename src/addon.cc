@@ -33,6 +33,9 @@ NAN_MODULE_INIT(initialize) {
     REGISTER_TEST(NdtTest);
     REGISTER_TEST(TcpConnectTest);
     REGISTER_TEST(WebConnectivityTest);
+    REGISTER_TEST(WhatsappTest);
+    REGISTER_TEST(TelegramTest);
+    REGISTER_TEST(FacebookMessengerTest);
 }
 
 // The NODE_MODULE macro declares that this is a Node module with
