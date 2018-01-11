@@ -28,6 +28,9 @@ wc.on('log', (type, s) => {
 wc.on('entry', (e) => {
   console.log('entry', e)
 })
+wc.on('overall-data-usage', (down, up) => {
+  console.log('data usage', down, up)
+})
 wc.run()
   .then(result => {
     console.log('whatsapp test finished running with result', result)

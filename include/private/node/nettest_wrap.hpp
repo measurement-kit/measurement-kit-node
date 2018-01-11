@@ -81,6 +81,7 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
         Nan::SetPrototypeMethod(tpl, "on_event", on_event);
         Nan::SetPrototypeMethod(tpl, "on_log", on_log);
         Nan::SetPrototypeMethod(tpl, "on_progress", on_progress);
+        Nan::SetPrototypeMethod(tpl, "on_overall_data_usage", on_overall_data_usage);
         Nan::SetPrototypeMethod(tpl, "run", run);
         Nan::SetPrototypeMethod(tpl, "start", start);
 
@@ -306,6 +307,24 @@ template <typename Nettest> class NettestWrap : public Nan::ObjectWrap {
         });
     }
 
+    /// The on_overall_data_usage setter allows to set the callback called when
+    /// the overall data used by the test is available.
+    static void on_overall_data_usage(const Nan::FunctionCallbackInfo<v8::Value> &info) {
+        set_value(1, info, [&info](NettestWrap *self) {
+            self->nettest.on_overall_data_usage([
+                async_ctx = self->async_ctx, callback = wrap_callback(info[0])
+            ](DataUsage du) {
+                async::suspend<>(async_ctx, [callback, du]() {
+                    Nan::HandleScope scope;
+                    const int argc = 2;
+                    v8::Local<v8::Value> argv[argc] = {
+                            Nan::New(static_cast<double>(du.down)),
+                            Nan::New(static_cast<double>(du.up))};
+                    callback->Call(argc, argv);
+                });
+            });
+        });
+    }
     // clang-format on
 
     /// ## runners
