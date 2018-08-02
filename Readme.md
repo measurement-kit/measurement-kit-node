@@ -6,6 +6,9 @@ methodologies (performance, censorship, etc.).
 This repository contains the node.js bindings for MeasurementKit allowing you
 to use MeasurementKit from node.js directly.
 
+⚠️: This repository is currently discontinued. We may want to revive it in
+the furure, but at present you should not use this code.
+
 ## Setup
 
 To get a development environment setup ensure you have:
